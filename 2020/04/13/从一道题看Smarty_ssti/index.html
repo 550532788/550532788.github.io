@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"550532788.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="0x00 前言​    在BUUCTF做到了[CISCN2019 华东赛区]WEB11这道题。虽然只是一道很简单的SSTI，网上也很容易找到Payload。但是鉴于我找到的和我自己的Payload都不能用，这说明比赛时我不一定做得出来，于是在此记录并且浅谈Smarty SSTI。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从一道题看Smarty_ssti">
+<meta property="og:url" content="https://550532788.github.io/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/index.html">
+<meta property="og:site_name" content="Cxlover&#39;s blog">
+<meta property="og:description" content="0x00 前言​    在BUUCTF做到了[CISCN2019 华东赛区]WEB11这道题。虽然只是一道很简单的SSTI，网上也很容易找到Payload。但是鉴于我找到的和我自己的Payload都不能用，这说明比赛时我不一定做得出来，于是在此记录并且浅谈Smarty SSTI。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-04-13T10:52:02.316Z">
+<meta property="article:modified_time" content="2020-04-13T10:52:02.316Z">
+<meta property="article:author" content="Cxlover">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://550532788.github.io/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>从一道题看Smarty_ssti | Cxlover's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Cxlover's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section">Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section">Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+      <meta itemprop="name" content="Cxlover">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cxlover's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从一道题看Smarty_ssti
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-13 18:52:02" itemprop="dateCreated datePublished" datetime="2020-04-13T18:52:02+08:00">2020-04-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    在<code>BUUCTF</code>做到了<code>[CISCN2019 华东赛区]WEB11</code>这道题。虽然只是一道很简单的<code>SSTI</code>，网上也很容易找到<code>Payload</code>。但是鉴于我找到的和我自己的<code>Payload</code>都不能用，这说明比赛时我不一定做得出来，于是在此记录并且浅谈<code>Smarty SSTI</code>。</p>
+<a id="more"></a>
+
+<h3 id="0x01-利用"><a href="#0x01-利用" class="headerlink" title="0x01 利用"></a><code>0x01</code> 利用</h3><h4 id="漏洞确认："><a href="#漏洞确认：" class="headerlink" title="漏洞确认："></a>漏洞确认：</h4><p>​    一般情况下直接在注入点输入<code>{$smarty.version}</code>就可以查看<code>smarty</code>的版本号。当然这同时也说明了这里存在<code>SSTI</code>。本题的版本号是<code>3.1.30</code>。</p>
+<h4 id="旧版利用方式："><a href="#旧版利用方式：" class="headerlink" title="旧版利用方式："></a>旧版利用方式：</h4><p>​    首先是我在晚上找到的利用方法。<code>{self::getStreamVariable(&quot;file:///proc/self/loginuid&quot;)}</code>。大佬说可以利用这种方式来读文件，但是在这道题中会报错。具体原因我也不知道是为什么。毕竟我是真的没有尝试过<code>Smarty</code>模板开发。那么接下来谈谈合天大佬提到的注入方法。</p>
+<h5 id="标签方式："><a href="#标签方式：" class="headerlink" title="标签方式："></a>标签方式：</h5><p>​    首先是<code>Smarty</code>支持使用<code>{php}echo 1;{/php}</code>这样的形式执行<code>PHP</code>代码。最常规的思路就是使用该标签。但是，好巧不巧的是，这道题目会报错。</p>
+<p>官方文档中有下面的描述：</p>
+<blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Smarty已经废弃&#123;php&#125;标签，强烈建议不要使用。在Smarty 3.1，&#123;php&#125;仅在SmartyBC中可用。</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>该题目使用的是<code>Smarty</code>类，所以只能另寻它路。</p>
+<p>​    另一个思路就是利用<code>{literal}{/literal}</code>标签，这个标签中间是可以插入<code>JavaScript</code>代码的。所以我们可以考虑利用<code>{literal}&lt;script language=&quot;php&quot;&gt;phpinfo();&lt;/script&gt;{/literal}</code>这样的方式来插入<code>PHP</code>代码。</p>
+<p>​    但是就这道题而言，因为环境选用的是<code>PHP7</code>，而我在<code>PHP5与PHP7的区别</code>中也说过，<code>PHP7</code>中取消了<code>&lt;script language=&quot;php&quot;&gt;&lt;/script&gt;</code>。所以这道题不能使用。</p>
+<h5 id="静态方法："><a href="#静态方法：" class="headerlink" title="静态方法："></a>静态方法：</h5><p>​    通过<code>self</code>获取<code>Smarty</code>类再调用其静态方法实现文件读写被网上很多文章采用。</p>
+<p><code>Smarty</code>类的<code>getStreamVariable</code>方法的代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getStreamVariable</span><span class="params">($variable)</span></span>&#123; $_result = ”; $fp = fopen($variable, ‘r+’); <span class="keyword">if</span> ($fp) &#123; <span class="keyword">while</span> (!feof($fp) &amp;&amp; ($current_line = fgets($fp)) !== <span class="keyword">false</span>) &#123; $_result .= $current_line; &#125; fclose($fp); <span class="keyword">return</span> $_result; &#125; $smarty = <span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;smarty) ? <span class="keyword">$this</span>-&gt;smarty : <span class="keyword">$this</span>; <span class="keyword">if</span> ($smarty-&gt;error_unassigned) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> SmartyException(‘Undefined stream variable “‘ . $variable . ‘”‘); &#125; <span class="keyword">else</span> &#123; <span class="keyword">return</span> <span class="keyword">null</span>; &#125; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    可以看到这个方法可以读取一个文件并且返回它的内容，就像上文提到的那样，我们在网上见到的<code>Payload</code>大多都是这样的<code>{self::getStreamVariable(&quot;file:///proc/self/loginuid&quot;)}</code>。但是事实也证明了这种<code>payload</code>在新版本是没有用的，会抛出下面的错误：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Fatal error:  Uncaught  --&gt; Smarty Compiler: Syntax error in template &quot;string:&lt;html lang&#x3D;&quot;en&quot;&gt;&lt;head&gt;&lt;meta http-equiv&#x3D;&quot;...&quot;  on line 12 &quot;&lt;div style&#x3D;&quot;float:right;margin-top:30px;&quot;&gt;Current IP:&#123;if self::getStreamVariable(&quot;file:&#x2F;&#x2F;&#x2F;flag&quot;)&#125;&#123;&#x2F;if&#125; &lt;&#x2F;div&gt;&quot; static class &#39;self&#39; is undefined or not allowed by security setting &lt;-- </span><br><span class="line">  thrown in</span><br></pre></td></tr></table></figure>
+
+<p>​    而且在<code>Smarty3.1.30</code>版本中官方已经把该静态方法删除。对于那些文章提到的利用 <code>Smarty_Internal_Write_File</code>类的<code>writeFile</code>方法来写<code>shell</code>也由于同样的原因无法使用。</p>
+<h4 id="新版利用方式："><a href="#新版利用方式：" class="headerlink" title="新版利用方式："></a>新版利用方式：</h4><p><code>{if}</code>标签：</p>
+<p>在官方文档中有下面这些话：</p>
+<blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Smarty的&#123;if&#125;条件判断和PHP的if 非常相似，只是增加了一些特性。每个&#123;if&#125;必须有一个配对的&#123;&#x2F;if&#125;. 也可以使用&#123;else&#125; 和 &#123;elseif&#125;. 全部的PHP条件表达式和函数都可以在if内使用，如*||*, or, &amp;&amp;, and, is_array(), 等等</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>既然全部的<code>PHP</code>函数都可以使用，那么可以执行<code>PHP</code>代码吗？</p>
+<p>​    尝试使用下面的<code>Payload:{if phpinfo()}{/if}</code>。发现成功爆出<code>phpinfo</code>。接下来直接命令执行就好了。</p>
+<h3 id="0x02-分析"><a href="#0x02-分析" class="headerlink" title="0x02 分析"></a><code>0x02</code> 分析</h3><p>​    最后跟着合天大佬看一看漏洞的成因。本题的代码是这样的。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;?phprequire_once(‘./smarty/libs/’ . ‘Smarty.class.php’);$smarty = new Smarty();$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];$smarty-&gt;display(“string:”.$ip);&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    因为<code>$ip</code>没有经过任何检验就被当做<code>Smarty</code>模板，所以<code>Smarty</code>标签被直接执行从而导致了<code>SSTI</code>。</p>
+<h3 id="0x03-结语"><a href="#0x03-结语" class="headerlink" title="0x03 结语"></a><code>0x03</code> 结语</h3><p>​    这是非博客外的第一篇<code>SSTI</code>的文章。以后应该会有<code>Java</code>或者别的框架的。<code>Flask</code>就算了，说太多就没意思了。说起来<code>SSTI</code>的秘诀其实就是查官方文档。所以暑假一定要把官方文档看一遍。</p>
+<h3 id="0x04-参考"><a href="#0x04-参考" class="headerlink" title="0x04 参考"></a><code>0x04</code> 参考</h3><p><code>Smarty</code>官方文档：<a href="https://www.smarty.net/docs/" target="_blank" rel="noopener">https://www.smarty.net/docs/</a></p>
+<p><a href="https://portswigger.net/research/server-side-template-injection" target="_blank" rel="noopener">https://portswigger.net/research/server-side-template-injection</a></p>
+<p>合天大佬的文章：<a href="https://www.freebuf.com/column/219913.html" target="_blank" rel="noopener">https://www.freebuf.com/column/219913.html</a></p>
+<p>各种模板注入的集合：<a href="https://www.k0rz3n.com/2018/11/12/%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0%E5%B8%A6%E4%BD%A0%E7%90%86%E8%A7%A3%E6%BC%8F%E6%B4%9E%E4%B9%8BSSTI%E6%BC%8F%E6%B4%9E/" target="_blank" rel="noopener">https://www.k0rz3n.com/2018/11/12/%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0%E5%B8%A6%E4%BD%A0%E7%90%86%E8%A7%A3%E6%BC%8F%E6%B4%9E%E4%B9%8BSSTI%E6%BC%8F%E6%B4%9E/</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/13/CRLF/" rel="prev" title="CRLF">
+      <i class="fa fa-chevron-left"></i> CRLF
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-利用"><span class="nav-number">2.</span> <span class="nav-text">0x01 利用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#漏洞确认："><span class="nav-number">2.1.</span> <span class="nav-text">漏洞确认：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#旧版利用方式："><span class="nav-number">2.2.</span> <span class="nav-text">旧版利用方式：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#标签方式："><span class="nav-number">2.2.1.</span> <span class="nav-text">标签方式：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#静态方法："><span class="nav-number">2.2.2.</span> <span class="nav-text">静态方法：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#新版利用方式："><span class="nav-number">2.3.</span> <span class="nav-text">新版利用方式：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-分析"><span class="nav-number">3.</span> <span class="nav-text">0x02 分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-结语"><span class="nav-number">4.</span> <span class="nav-text">0x03 结语</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-参考"><span class="nav-number">5.</span> <span class="nav-text">0x04 参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Cxlover"
+      src="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+  <p class="site-author-name" itemprop="name">Cxlover</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Cxlover</span>
+</div>
+<!--  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+  -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":true,"debug":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":250,"height":500},"mobile":{"show":false},"log":false});</script>
+</body>
+</html>
