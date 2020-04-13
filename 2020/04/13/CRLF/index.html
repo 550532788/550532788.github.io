@@ -34,8 +34,8 @@
 <meta property="og:image" content="c:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5C1584619417483.png">
 <meta property="og:image" content="c:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5C1584619311699.png">
 <meta property="og:image" content="c:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5C1584620693498.png">
-<meta property="article:published_time" content="2020-04-13T09:09:28.467Z">
-<meta property="article:modified_time" content="2020-04-13T09:09:28.467Z">
+<meta property="article:published_time" content="2020-04-13T10:24:55.637Z">
+<meta property="article:modified_time" content="2020-04-13T10:24:55.637Z">
 <meta property="article:author" content="cioier">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191027233501-56f060b8-f8cf-1.jpg">
@@ -181,7 +181,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-04-13 17:09:28" itemprop="dateCreated datePublished" datetime="2020-04-13T17:09:28+08:00">2020-04-13</time>
+              <time title="Created: 2020-04-13 18:24:55" itemprop="dateCreated datePublished" datetime="2020-04-13T18:24:55+08:00">2020-04-13</time>
             </span>
 
           
@@ -289,6 +289,8 @@
 <p><img src="C:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5C1584620693498.png" alt="1584620693498"></p>
 <p>​    原理：后端服务器被混淆，不处理<code>Transfer-Encoding</code>请求头，使用<code>Content-Length</code>请求头。</p>
 <h3 id="0x04-漏洞修复"><a href="#0x04-漏洞修复" class="headerlink" title="0x04 漏洞修复"></a><code>0x04</code> 漏洞修复</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1、将前端服务器配置为只使用HTTP&#x2F;2与后端系统通信</span><br><span class="line">2、完全禁用后端连接重用来解决此漏洞的所有变体</span><br><span class="line">3、确保连接中的所有服务器运行具有相同配置的相同web服务器软件。</span><br><span class="line">4、彻底拒绝模糊的请求，并删除关联的连接。</span><br><span class="line">5、在Burp Suite中，你可以使用Repeater菜单禁用此行为，确保你选择的工具具有相同的功能。</span><br><span class="line">6、通过Squid之类的代理来测试他们的测试人员的流量以进行监控。破坏测试人员发起的任何走私攻击请求，确保对此漏洞做到全面杜绝。</span><br></pre></td></tr></table></figure>
+
+
 
 <h3 id="0x05-参考资料"><a href="#0x05-参考资料" class="headerlink" title="0x05 参考资料"></a><code>0x05</code> 参考资料</h3><p><code>先知社区    从一道题到协议层攻击之HTTP请求走私</code></p>
 <p><a href="https://xz.aliyun.com/t/6654#toc-6" target="_blank" rel="noopener">https://xz.aliyun.com/t/6654#toc-6</a></p>
