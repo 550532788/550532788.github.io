@@ -20,28 +20,39 @@
     var CONFIG = {"hostname":"550532788.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Cxlover&#39;s blog">
-<meta property="og:url" content="https://550532788.github.io/index.html">
+  <meta name="description" content="0x00 前言​    这次学习了JWT和Ruby模板注入。因为当初没有写过有关JWT和Ruby的文章，在此记录。 0x01 探测​    刚进入题目就是一个一直刷新的界面，看得人生理性的不适。抓包看了一下也没看出什么名堂，丢进扫描器不一会就扫出了一个robots.txt。发现了一个&#x2F;filebak，一进去就是源码。  123456789101112131415161718192021222324">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[SCTF2019]Flag Shop">
+<meta property="og:url" content="https://550532788.github.io/2020/04/17/[SCTF2019]Flag%20Shop/index.html">
 <meta property="og:site_name" content="Cxlover&#39;s blog">
+<meta property="og:description" content="0x00 前言​    这次学习了JWT和Ruby模板注入。因为当初没有写过有关JWT和Ruby的文章，在此记录。 0x01 探测​    刚进入题目就是一个一直刷新的界面，看得人生理性的不适。抓包看了一下也没看出什么名堂，丢进扫描器不一会就扫出了一个robots.txt。发现了一个&#x2F;filebak，一进去就是源码。  123456789101112131415161718192021222324">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="c:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20200417181832465.png">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/14417137-175c70a85e7d07cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/810/format/webp">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200417122154image-20200417202049477.png">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200417123145image-20200417202730408.png">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200417123155image-20200417202804875.png">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200417123204image-20200417202941899.png">
+<meta property="article:published_time" content="2020-04-17T12:41:09.486Z">
+<meta property="article:modified_time" content="2020-04-17T12:41:09.486Z">
 <meta property="article:author" content="Cxlover">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20200417181832465.png">
 
-<link rel="canonical" href="https://550532788.github.io/">
+<link rel="canonical" href="https://550532788.github.io/2020/04/17/[SCTF2019]Flag%20Shop/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'en'
   };
 </script>
 
-  <title>Cxlover's blog</title>
+  <title>[SCTF2019]Flag Shop | Cxlover's blog</title>
   
 
 
@@ -139,9 +150,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
@@ -157,10 +169,9 @@
       <meta itemprop="name" content="Cxlover's blog">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/17/%5BSCTF2019%5DFlag%20Shop/" class="post-title-link" itemprop="url">[SCTF2019]Flag Shop</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          [SCTF2019]Flag Shop
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -183,7 +194,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    这次学习了<code>JWT</code>和<code>Ruby</code>模板注入。因为当初没有写过有关<code>JWT</code>和<code>Ruby</code>的文章，在此记录。</p>
+        <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    这次学习了<code>JWT</code>和<code>Ruby</code>模板注入。因为当初没有写过有关<code>JWT</code>和<code>Ruby</code>的文章，在此记录。</p>
 <h3 id="0x01-探测"><a href="#0x01-探测" class="headerlink" title="0x01 探测"></a><code>0x01</code> 探测</h3><p>​    刚进入题目就是一个一直刷新的界面，看得人生理性的不适。抓包看了一下也没看出什么名堂，丢进扫描器不一会就扫出了一个<code>robots.txt</code>。发现了一个<code>/filebak</code>，一进去就是源码。</p>
 <p><img src="C:%5CUsers%5CAcer%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20200417181832465.png" alt="image-20200417181832465"></p>
 <figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'sinatra'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'sinatra/cookies'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'sinatra/json'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'jwt'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'securerandom'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'erb'</span></span><br><span class="line"></span><br><span class="line">set <span class="symbol">:public_folder</span>, File.dirname(__FILE_<span class="number">_</span>) + <span class="string">'/static'</span></span><br><span class="line"></span><br><span class="line">FLAGPRICE = <span class="number">1000000000000000000000000000</span></span><br><span class="line">ENV[<span class="string">"SECRET"</span>] = SecureRandom.hex(<span class="number">64</span>)</span><br><span class="line"></span><br><span class="line">configure <span class="keyword">do</span></span><br><span class="line">  enable <span class="symbol">:logging</span></span><br><span class="line">  file = File.new(File.dirname(__FILE_<span class="number">_</span>) + <span class="string">'/../log/http.log'</span>,<span class="string">"a+"</span>)</span><br><span class="line">  file.sync = <span class="literal">true</span></span><br><span class="line">  use Rack::CommonLogger, file</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">"/"</span> <span class="keyword">do</span></span><br><span class="line">  redirect <span class="string">'/shop'</span>, <span class="number">302</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">"/filebak"</span> <span class="keyword">do</span></span><br><span class="line">  content_type <span class="symbol">:text</span></span><br><span class="line">  erb IO.binread __FILE_<span class="number">_</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">"/api/auth"</span> <span class="keyword">do</span></span><br><span class="line">  payload = &#123; <span class="symbol">uid:</span> SecureRandom.uuid , <span class="symbol">jkl:</span> <span class="number">20</span>&#125;</span><br><span class="line">  auth = JWT.encode payload,ENV[<span class="string">"SECRET"</span>] , <span class="string">'HS256'</span></span><br><span class="line">  cookies[<span class="symbol">:auth</span>] = auth</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">"/api/info"</span> <span class="keyword">do</span></span><br><span class="line">  islogin</span><br><span class="line">  auth = JWT.decode cookies[<span class="symbol">:auth</span>],ENV[<span class="string">"SECRET"</span>] , <span class="literal">true</span>, &#123; <span class="symbol">algorithm:</span> <span class="string">'HS256'</span> &#125;</span><br><span class="line">  json(&#123;<span class="symbol">uid:</span> auth[<span class="number">0</span>][<span class="string">"uid"</span>],<span class="symbol">jkl:</span> auth[<span class="number">0</span>][<span class="string">"jkl"</span>]&#125;)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">"/shop"</span> <span class="keyword">do</span></span><br><span class="line">  erb <span class="symbol">:shop</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">"/work"</span> <span class="keyword">do</span></span><br><span class="line">  islogin</span><br><span class="line">  auth = JWT.decode cookies[<span class="symbol">:auth</span>],ENV[<span class="string">"SECRET"</span>] , <span class="literal">true</span>, &#123; <span class="symbol">algorithm:</span> <span class="string">'HS256'</span> &#125;</span><br><span class="line">  auth = auth[<span class="number">0</span>]</span><br><span class="line">  <span class="keyword">unless</span> params[<span class="symbol">:SECRET</span>].<span class="literal">nil</span>?</span><br><span class="line">    <span class="keyword">if</span> ENV[<span class="string">"SECRET"</span>].match(<span class="string">"<span class="subst">#&#123;params[<span class="symbol">:SECRET</span>].match(<span class="regexp">/[0-9a-z]+/</span>)&#125;</span>"</span>)</span><br><span class="line">      puts ENV[<span class="string">"FLAG"</span>]</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> params[<span class="symbol">:do</span>] == <span class="string">"<span class="subst">#&#123;params[<span class="symbol">:name</span>][<span class="number">0</span>,<span class="number">7</span>]&#125;</span> is working"</span> <span class="keyword">then</span></span><br><span class="line"></span><br><span class="line">    auth[<span class="string">"jkl"</span>] = auth[<span class="string">"jkl"</span>].to_i + SecureRandom.random_number(<span class="number">10</span>)</span><br><span class="line">    auth = JWT.encode auth,ENV[<span class="string">"SECRET"</span>] , <span class="string">'HS256'</span></span><br><span class="line">    cookies[<span class="symbol">:auth</span>] = auth</span><br><span class="line">    ERB::new(<span class="string">"&lt;script&gt;alert('<span class="subst">#&#123;params[<span class="symbol">:name</span>][<span class="number">0</span>,<span class="number">7</span>]&#125;</span> working successfully!')&lt;/script&gt;"</span>).result</span><br><span class="line"></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">post <span class="string">"/shop"</span> <span class="keyword">do</span></span><br><span class="line">  islogin</span><br><span class="line">  auth = JWT.decode cookies[<span class="symbol">:auth</span>],ENV[<span class="string">"SECRET"</span>] , <span class="literal">true</span>, &#123; <span class="symbol">algorithm:</span> <span class="string">'HS256'</span> &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> auth[<span class="number">0</span>][<span class="string">"jkl"</span>] &lt; FLAGPRICE <span class="keyword">then</span></span><br><span class="line"></span><br><span class="line">    json(&#123;<span class="symbol">title:</span> <span class="string">"error"</span>,<span class="symbol">message:</span> <span class="string">"no enough jkl"</span>&#125;)</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line"></span><br><span class="line">    auth &lt;&lt; &#123;<span class="symbol">flag:</span> ENV[<span class="string">"FLAG"</span>]&#125;</span><br><span class="line">    auth = JWT.encode auth,ENV[<span class="string">"SECRET"</span>] , <span class="string">'HS256'</span></span><br><span class="line">    cookies[<span class="symbol">:auth</span>] = auth</span><br><span class="line">    json(&#123;<span class="symbol">title:</span> <span class="string">"success"</span>,<span class="symbol">message:</span> <span class="string">"jkl is good thing"</span>&#125;)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">islogin</span></span></span><br><span class="line">  <span class="keyword">if</span> cookies[<span class="symbol">:auth</span>].<span class="literal">nil</span>? <span class="keyword">then</span></span><br><span class="line">    redirect to(<span class="string">'/shop'</span>)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
@@ -228,151 +239,30 @@
 <p><a href="https://blog.csdn.net/a3320315/article/details/104265742?depth_1-utm_source=distribute.pc_relevant_right.none-task-blog-BlogCommendFromBaidu-1&amp;utm_source=distribute.pc_relevant_right.none-task-blog-BlogCommendFromBaidu-1" target="_blank" rel="noopener">https://blog.csdn.net/a3320315/article/details/104265742?depth_1-utm_source=distribute.pc_relevant_right.none-task-blog-BlogCommendFromBaidu-1&amp;utm_source=distribute.pc_relevant_right.none-task-blog-BlogCommendFromBaidu-1</a></p>
 <p>复现平台：<code>https://buuoj.cn/</code></p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
-      <meta itemprop="name" content="Cxlover">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Cxlover's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/" class="post-title-link" itemprop="url">从一道题看Smarty_ssti</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-04-13 18:52:02" itemprop="dateCreated datePublished" datetime="2020-04-13T18:52:02+08:00">2020-04-13</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    在<code>BUUCTF</code>做到了<code>[CISCN2019 华东赛区]WEB11</code>这道题。虽然只是一道很简单的<code>SSTI</code>，网上也很容易找到<code>Payload</code>。但是鉴于我找到的和我自己的<code>Payload</code>都不能用，这说明比赛时我不一定做得出来，于是在此记录并且浅谈<code>Smarty SSTI</code>。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/04/13/CRLF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
-      <meta itemprop="name" content="Cxlover">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Cxlover's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/13/CRLF/" class="post-title-link" itemprop="url">CRLF</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-04-13 18:24:55" itemprop="dateCreated datePublished" datetime="2020-04-13T18:24:55+08:00">2020-04-13</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    之前做题的时候碰到了<code>CRLF</code>，但是毫不客气的说。我没有搞懂！没办法，准备放一放的，没想到一放就放到了现在。恰巧峰佬突然更了一篇博客让我想起了这件事。这里刚好结合峰佬的博客来看一看让我头疼的<code>CRLF</code>。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/04/13/CRLF/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/13/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9C%8BSmarty_ssti/" rel="prev" title="从一道题看Smarty_ssti">
+      <i class="fa fa-chevron-left"></i> 从一道题看Smarty_ssti
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-
   
 
 
@@ -425,6 +315,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-探测"><span class="nav-number">2.</span> <span class="nav-text">0x01 探测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-分析"><span class="nav-number">3.</span> <span class="nav-text">0x02 分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-结语"><span class="nav-number">4.</span> <span class="nav-text">0x03 结语</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-参考"><span class="nav-number">5.</span> <span class="nav-text">0x04 参考</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
